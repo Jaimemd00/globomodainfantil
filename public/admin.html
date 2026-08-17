@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<meta name="theme-color" content="#fffdfe">
+<title>Gestión · Globo</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;1,6..12,400&family=Parisienne&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/estilos.css?v=4929a327">
+</head>
+<body>
+<a class="saltar" href="#principal">Saltar al contenido</a>
+<header id="cabecera"></header>
+
+<main id="principal" class="seccion seccion--crema">
+  <div class="contenedor">
+
+    <!-- El acceso va aquí mismo: mandar al usuario a otra página para volver
+         después era el punto donde más gente se perdía. -->
+    <div id="sin-permiso" hidden>
+      <div class="panel" style="max-width:440px;margin:2rem auto">
+        <p class="cejilla">Trastienda</p>
+        <h1 style="font-size:1.7rem;margin-bottom:.3rem">Entrar a gestionar</h1>
+        <p style="color:var(--tinta-70);font-size:.95rem">Esta zona es para el equipo de la tienda.</p>
+
+        <form class="formulario" id="acceso-admin" style="margin-top:1.4rem">
+          <div id="mensaje-admin"></div>
+          <div class="campo">
+            <label for="a-email">Correo</label>
+            <input id="a-email" type="email" autocomplete="username" required>
+          </div>
+          <div class="campo">
+            <label for="a-password">Contraseña</label>
+            <input id="a-password" type="password" autocomplete="current-password" required>
+          </div>
+          <button class="btn btn--acento btn--ancho" type="submit">Entrar</button>
+        </form>
+
+        <details style="margin-top:1.4rem">
+          <summary style="cursor:pointer;font-size:.9rem;color:var(--tinta-70)">No consigo entrar</summary>
+          <div style="font-size:.9rem;color:var(--tinta-70);margin-top:.7rem">
+            <p style="margin:0 0 .6rem">En una terminal, dentro de la carpeta de la tienda:</p>
+            <p style="margin:0 0 .4rem"><strong>Ver qué cuentas existen:</strong><br>
+              <code style="background:var(--crema);padding:.2rem .4rem;border-radius:4px">npm run admin</code></p>
+            <p style="margin:0 0 .4rem"><strong>Restablecer la contraseña:</strong><br>
+              <code style="background:var(--crema);padding:.2rem .4rem;border-radius:4px">npm run admin -- --reset</code></p>
+            <p style="margin:.6rem 0 0">Si la página no reacciona, pulsa el botón de abajo para limpiar la sesión guardada.</p>
+            <button class="btn btn--linea btn--peq" id="limpiar-sesion" type="button" style="margin-top:.6rem">Limpiar sesión y recargar</button>
+          </div>
+        </details>
+      </div>
+    </div>
+
+    <div id="panel" hidden>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:1.5rem;flex-wrap:wrap;margin-bottom:2rem">
+        <div>
+          <p class="cejilla">Trastienda</p>
+          <h1 style="margin:0">Gestión de la tienda</h1>
+        </div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+          <a class="btn btn--linea btn--peq" href="/">Ver la tienda</a>
+          <button class="btn btn--linea btn--peq" id="salir">Cerrar sesión</button>
+        </div>
+      </div>
+
+      <div class="pestanas" role="tablist">
+        <button role="tab" aria-selected="true" data-panel="a-resumen">Resumen</button>
+        <button role="tab" aria-selected="false" data-panel="a-pedidos">Pedidos</button>
+        <button role="tab" aria-selected="false" data-panel="a-productos">Catálogo</button>
+        <button role="tab" aria-selected="false" data-panel="a-clientes">Clientes</button>
+      </div>
+
+      <!-- Resumen -->
+      <section class="panel-pestana" id="a-resumen">
+        <dl class="metricas" id="metricas"></dl>
+        <div class="disposicion-2">
+          <div class="panel">
+            <h3 style="margin-top:0">Pedidos de los últimos 14 días</h3>
+            <div class="grafico" id="grafico"></div>
+            <p class="mono" style="font-size:.76rem;color:var(--tinta-45);margin:.8rem 0 0" id="grafico-pie"></p>
+          </div>
+          <div class="panel">
+            <h3 style="margin-top:0">Stock bajo</h3>
+            <div id="bajo-stock"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Pedidos -->
+      <section class="panel-pestana" id="a-pedidos" hidden>
+        <div class="barra-tienda">
+          <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+            <input type="search" id="buscar-pedidos" placeholder="Código, nombre o correo" style="width:260px">
+            <select id="filtro-estado" style="width:auto">
+              <option value="">Todos los estados</option>
+              <option value="pendiente">Pendiente</option>
+              <option value="pagado">Pagado</option>
+              <option value="preparando">Preparando</option>
+              <option value="enviado">Enviado</option>
+              <option value="entregado">Entregado</option>
+              <option value="cancelado">Cancelado</option>
+            </select>
+          </div>
+        </div>
+        <div class="tabla-envoltorio">
+          <table class="datos">
+            <thead>
+              <tr><th>Pedido</th><th>Cliente</th><th>Fecha</th><th>Artículos</th><th class="num">Total</th><th>Estado</th><th></th></tr>
+            </thead>
+            <tbody id="tabla-pedidos"><tr><td colspan="7" class="cargando">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Catálogo -->
+      <section class="panel-pestana" id="a-productos" hidden>
+        <div class="barra-tienda">
+          <input type="search" id="buscar-productos" placeholder="Nombre o SKU" style="width:260px">
+          <button class="btn btn--acento btn--peq" id="nuevo-producto">Añadir artículo</button>
+        </div>
+        <div class="tabla-envoltorio">
+          <table class="datos">
+            <thead>
+              <tr><th></th><th>Artículo</th><th>SKU</th><th>Familia</th><th class="num">Precio</th><th class="num">Stock</th><th>Estado</th><th></th></tr>
+            </thead>
+            <tbody id="tabla-productos"><tr><td colspan="8" class="cargando">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Clientes -->
+      <section class="panel-pestana" id="a-clientes" hidden>
+        <div class="tabla-envoltorio">
+          <table class="datos">
+            <thead>
+              <tr><th>Cliente</th><th>Correo</th><th>Ciudad</th><th class="num">Pedidos</th><th class="num">Gastado</th><th>Alta</th></tr>
+            </thead>
+            <tbody id="tabla-clientes"><tr><td colspan="6" class="cargando">Cargando…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+  </div>
+</main>
+
+<!-- Ventana de edición -->
+<div class="modal" id="modal" hidden>
+  <div class="modal__caja" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <div class="modal__cabecera">
+      <h2 id="modal-titulo" style="margin:0;font-size:1.3rem">Editar</h2>
+      <button class="modal__cerrar" id="cerrar-modal" aria-label="Cerrar">×</button>
+    </div>
+    <div id="modal-cuerpo"></div>
+  </div>
+</div>
+
+<footer id="pie"></footer>
+<script src="/assets/js/comun.js?v=9835dc2f"></script>
+<script src="/assets/js/admin-imagenes.js?v=3dec0fbc"></script>
+<script src="/assets/js/admin.js?v=5f6d9fcd"></script>
+</body>
+</html>

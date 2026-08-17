@@ -1,0 +1,11 @@
+node_modules/
+data/
+.env
+.env.local
+*.log
+.DS_Store
+
+# Material subido desde el panel
+public/img/modelos/
+public/img/prendas/
+public/img/generado/

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<meta name="theme-color" content="#fffdfe">
+<title>Globo · Moda infantil en Écija (Sevilla) — de 0 a 14 años</title>
+<meta name="description" content="Tienda de moda infantil en Écija. Ropa de bebé, niña, niño y ceremonia de 0 a 14 años. Compra online y recoge gratis en tienda, o recíbelo en casa en 24-48 h.">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;1,6..12,400&family=Parisienne&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/estilos.css?v=4929a327">
+</head>
+<body>
+<a class="saltar" href="#principal">Saltar al contenido</a>
+<header id="cabecera"></header>
+
+<main id="principal">
+
+  <section class="hero">
+    <div class="contenedor hero__rejilla">
+      <div>
+        <p class="hero__cejilla">Écija · Plaza Giles y Rubio</p>
+        <h1>La ropa de tus peques,<br><span class="brocha">a un clic</span> o a un paseo.</h1>
+        <p class="hero__entrada">
+          De 0 a 14 años. Elige aquí con calma, y decide si te lo llevamos a casa
+          o lo recoges en la tienda sin pagar envío.
+        </p>
+        <div class="hero__acciones">
+          <a class="btn btn--acento" href="/tienda">Ver toda la ropa</a>
+          <a class="btn btn--linea" href="/seguimiento">¿Dónde está mi pedido?</a>
+        </div>
+      </div>
+      <div class="escaparate" id="escaparate" aria-label="Escaparate de la tienda"></div>
+    </div>
+  </section>
+
+  <div class="garantias">
+    <div class="garantia" id="g1"></div>
+    <div class="garantia" id="g2"></div>
+    <div class="garantia" id="g3"></div>
+    <div class="garantia" id="g4"></div>
+  </div>
+
+  <!-- Elegir por edad es como busca de verdad quien compra ropa de niño -->
+  <section class="seccion">
+    <div class="contenedor">
+      <div class="seccion__encabezado">
+        <div>
+          <p class="cejilla">Empieza por aquí</p>
+          <h2>¿Para quién es?</h2>
+          <p>Elige la edad y te enseñamos solo lo que le vale. Desliza para verlas todas.</p>
+        </div>
+        <a class="enlace-flecha" href="/tienda">Ver todo el catálogo</a>
+      </div>
+      <div class="banda">
+        <div class="banda__pista" id="familias"><p class="cargando">Cargando…</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="seccion seccion--rosa">
+    <div class="contenedor">
+      <div class="seccion__encabezado">
+        <div>
+          <p class="cejilla">Acaba de llegar</p>
+          <h2>Novedades</h2>
+          <p>Traemos colecciones cortas. Cuando una talla se agota, tarda semanas en volver.</p>
+        </div>
+        <a class="enlace-flecha" href="/tienda?orden=novedades">Ver todas</a>
+      </div>
+      <div id="carrusel-novedades"></div>
+    </div>
+  </section>
+
+  <section class="seccion">
+    <div class="contenedor">
+      <div class="seccion__encabezado">
+        <div>
+          <p class="cejilla">Las que más repiten</p>
+          <h2>Nuestras favoritas</h2>
+          <p>Las prendas que los clientes vuelven a comprar en la talla siguiente.</p>
+        </div>
+        <a class="enlace-flecha" href="/tienda?destacado=1">Ver la selección</a>
+      </div>
+      <div id="carrusel-destacados"></div>
+    </div>
+  </section>
+
+  <section class="seccion seccion--menta">
+    <div class="contenedor">
+      <div class="seccion__encabezado">
+        <div>
+          <p class="cejilla">Bodas, bautizos y comuniones</p>
+          <h2><span class="brocha">Ceremonia</span></h2>
+          <p>Para los días que acaban en la foto de toda la vida. Ven a probárselo con tiempo.</p>
+        </div>
+        <a class="enlace-flecha" href="/tienda?categoria=ceremonia">Ver ceremonia</a>
+      </div>
+      <div id="carrusel-ceremonia"></div>
+    </div>
+  </section>
+
+  <section class="seccion seccion--lila">
+    <div class="contenedor tienda-fisica">
+      <div>
+        <p class="cejilla">Estamos aquí al lado</p>
+        <h2>Ven a vernos a la tienda</h2>
+        <p style="color:var(--tinta-70)">
+          Lo que compras online lo puedes recoger sin pagar envío, y si la talla no encaja,
+          te la cambiamos en el mostrador sin trámites ni cajas de vuelta.
+        </p>
+        <div class="tienda-fisica__datos" id="datos-tienda"></div>
+        <div style="display:flex;gap:.8rem;flex-wrap:wrap">
+          <a class="btn" href="tel:+34626347020">Llamar a la tienda</a>
+          <a class="btn btn--linea" href="https://wa.me/34626347020">Escribir por WhatsApp</a>
+        </div>
+      </div>
+      <div class="panel panel--rosa">
+        <h3 style="margin-top:0">Cómo comprar en tres pasos</h3>
+        <ol style="padding-left:1.3rem;color:var(--tinta-70);display:grid;gap:.8rem;margin:0">
+          <li><strong>Elige la talla</strong> en la ficha del artículo. Solo salen las que hay.</li>
+          <li><strong>Rellena tus datos</strong> o entra con tu cuenta si ya compraste antes.</li>
+          <li><strong>Recíbelo o recógelo.</strong> Te damos un número para seguirlo en todo momento.</li>
+        </ol>
+        <p style="margin:1.2rem 0 0;font-size:.92rem;color:var(--tinta-70)">
+          ¿Prefieres que te ayudemos? Llámanos al <a href="tel:+34626347020"><strong>626 34 70 20</strong></a>
+          y te preparamos el pedido nosotros.
+        </p>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer id="pie"></footer>
+<script src="/assets/js/comun.js?v=9835dc2f"></script>
+<script src="/assets/js/inicio.js?v=c3db1e03"></script>
+</body>
+</html>

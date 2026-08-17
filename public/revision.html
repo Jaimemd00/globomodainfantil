@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<title>Revisión de la tienda · Globo</title>
+<meta name="robots" content="noindex">
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 780px; margin: 2rem auto; padding: 0 1.2rem;
+         color: #443e48; background: #fff; line-height: 1.6; }
+  h1 { font-size: 1.5rem; margin-bottom: .2rem; }
+  .sub { color: #605a64; margin-top: 0; }
+  .prueba { display: grid; grid-template-columns: 78px 1fr; gap: .8rem; align-items: start;
+            padding: .8rem 0; border-bottom: 1px solid #f0e2ea; }
+  .marca { font-weight: 700; font-size: .78rem; letter-spacing: .06em; text-transform: uppercase;
+           padding: .25rem .5rem; border-radius: 999px; text-align: center; }
+  .ok    { background: #cdf0e6; color: #2c6b5e; }
+  .fallo { background: #fcd6e2; color: #8c3f57; }
+  .info  { background: #e6dcf0; color: #5f4a70; }
+  .detalle { font-size: .88rem; color: #605a64; margin: .2rem 0 0; }
+  code { background: #fbf0f6; padding: .12rem .35rem; border-radius: 4px; font-size: .88em; }
+  #resumen { margin: 1.5rem 0; padding: 1rem 1.2rem; border-radius: 12px; background: #fbf0f6;
+             border-left: 4px solid #f4a9c5; }
+  #copiar { font: inherit; font-weight: 700; padding: .7rem 1.2rem; border-radius: 999px;
+            border: 2px solid #f4a9c5; background: #fce0ea; cursor: pointer; margin-top: 1rem; }
+  pre { background: #fbf0f6; padding: 1rem; border-radius: 10px; overflow-x: auto; font-size: .82rem; }
+</style>
+</head>
+<body>
+
+<h1>Revisión de la tienda</h1>
+<p class="sub">Esta página comprueba, desde tu propio navegador, qué funciona y qué no.
+No cambia nada: solo mira.</p>
+
+<div id="resumen">Comprobando…</div>
+<div id="pruebas"></div>
+
+<button id="copiar" hidden>Copiar el informe</button>
+<pre id="informe" hidden></pre>
+
+<script>
+const resultados = [];
+const host = document.getElementById('pruebas');
+
+function apuntar(estado, titulo, detalle = '') {
+  resultados.push({ estado, titulo, detalle });
+  const fila = document.createElement('div');
+  fila.className = 'prueba';
+  fila.innerHTML = `<span class="marca ${estado}">${estado === 'ok' ? 'bien' : estado === 'fallo' ? 'falla' : 'dato'}</span>
+    <div><strong>${titulo}</strong>${detalle ? `<p class="detalle">${detalle}</p>` : ''}</div>`;
+  host.appendChild(fila);
+}
+
+async function revisar() {
+  /* 1 · ¿Está el servidor sirviendo la versión nueva del HTML? */
+  try {
+    const r = await fetch('/', { cache: 'no-store' });
+    const html = await r.text();
+    const cache = r.headers.get('cache-control') || '(sin cabecera)';
+    if (html.includes('id="escaparate"')) {
+      apuntar('ok', 'La portada es la versión nueva', 'Contiene el escaparate del hero.');
+    } else if (html.includes('id="collage"')) {
+      apuntar('fallo', 'La portada es de una versión ANTIGUA',
+        'Tu navegador o el servidor están sirviendo el index.html viejo. Comprueba que arrancaste la tienda desde la carpeta del ZIP nuevo, y recarga con Ctrl+Shift+R.');
+    } else {
+      apuntar('fallo', 'La portada no tiene ni escaparate ni collage', 'El archivo index.html no es el esperado.');
+    }
+    apuntar('info', 'Caché del HTML', `<code>${cache}</code> — debe decir <code>no-cache</code>.`);
+  } catch (e) {
+    apuntar('fallo', 'No se puede leer la portada', e.message);
+  }
+
+  /* 2 · ¿Responde la API? */
+  let productos = null;
+  try {
+    const r = await fetch('/api/salud', { cache: 'no-store' });
+    const d = await r.json();
+    apuntar('ok', 'El servidor responde', `Artículos en la base de datos: <strong>${d.productos}</strong>`);
+    if (d.productos === 0) {
+      apuntar('fallo', 'La base de datos está vacía',
+        'Ejecuta <code>npm run seed</code> en la carpeta de la tienda y recarga.');
+    }
+  } catch (e) {
+    apuntar('fallo', 'El servidor no responde', e.message);
+  }
+
+  /* 3 · ¿Hay artículos para el escaparate? */
+  try {
+    const r = await fetch('/api/productos?novedad=1&porPagina=6&orden=novedades', { cache: 'no-store' });
+    const d = await r.json();
+    productos = d.productos;
+    if (d.total > 0) {
+      apuntar('ok', `El escaparate tiene ${d.total} artículos`,
+        productos.map((p) => p.nombre).join(' · '));
+    } else {
+      apuntar('fallo', 'Ningún artículo marcado como novedad',
+        'El escaparate se llena con los artículos marcados como <strong>Novedad</strong> en el panel. Márcalos ahí, o ejecuta <code>npm run reset</code>.');
+    }
+  } catch (e) {
+    apuntar('fallo', 'No se puede consultar el catálogo', e.message);
+  }
+
+  /* 4 · ¿Cargan las fotos de verdad? */
+  if (productos && productos.length) {
+    const cargada = await new Promise((res) => {
+      const img = new Image();
+      img.onload = () => res(true);
+      img.onerror = () => res(false);
+      img.src = productos[0].imagen + '?t=' + Date.now();
+    });
+    if (cargada) apuntar('ok', 'Las fotos de producto cargan', `Probada: <code>${productos[0].imagen}</code>`);
+    else apuntar('fallo', 'Las fotos no cargan',
+      `<code>${productos[0].imagen}</code> no existe. Ejecuta <code>node server/construir-catalogo.js</code>.`);
+  }
+
+  /* 5 · ¿El JavaScript de la portada es el nuevo? */
+  try {
+    const r = await fetch('/assets/js/inicio.js', { cache: 'no-store' });
+    const js = await r.text();
+    if (js.includes('pintarEscaparate')) apuntar('ok', 'El JavaScript de la portada es el nuevo');
+    else apuntar('fallo', 'El JavaScript de la portada es antiguo',
+      'Sigue teniendo el collage. Recarga con Ctrl+Shift+R o borra la caché del sitio.');
+  } catch (e) {
+    apuntar('fallo', 'No se puede leer el JavaScript', e.message);
+  }
+
+  /* 6 · Entorno del navegador */
+  apuntar('info', 'Tu navegador', navigator.userAgent);
+  const oscuro = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  apuntar('info', 'Modo oscuro del sistema', oscuro
+    ? 'Activado. La tienda lo bloquea, pero una extensión como Dark Reader podría saltárselo.'
+    : 'Desactivado.');
+
+  /* Resumen */
+  const fallos = resultados.filter((r) => r.estado === 'fallo');
+  const resumen = document.getElementById('resumen');
+  resumen.innerHTML = fallos.length
+    ? `<strong>${fallos.length} ${fallos.length === 1 ? 'problema encontrado' : 'problemas encontrados'}.</strong><br>${fallos[0].titulo}: ${fallos[0].detalle}`
+    : '<strong>Todo correcto.</strong> Si aun así no ves bien la portada, copia el informe y envíalo.';
+
+  document.getElementById('copiar').hidden = false;
+}
+
+document.getElementById('copiar').addEventListener('click', () => {
+  const texto = resultados.map((r) => `[${r.estado}] ${r.titulo}\n    ${r.detalle.replace(/<[^>]+>/g, '')}`).join('\n');
+  const pre = document.getElementById('informe');
+  pre.textContent = texto;
+  pre.hidden = false;
+  navigator.clipboard?.writeText(texto);
+});
+
+revisar();
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /cuenta
+Disallow: /checkout
+Disallow: /carrito
+
+Sitemap: https://www.modaglobo.es/sitemap.xml

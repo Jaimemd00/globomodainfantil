@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<meta name="theme-color" content="#fffdfe">
+<title>Pago de prueba · Globo</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;1,6..12,400&family=Parisienne&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/estilos.css?v=4929a327">
+</head>
+<body>
+<main class="seccion">
+  <div class="contenedor" style="max-width:520px">
+
+    <div class="alerta alerta--info">
+      <strong>Pasarela en modo simulación.</strong> Esta pantalla imita la página de pago real
+      para poder probar el circuito completo. No se cobra nada ni se envía ningún dato fuera.
+    </div>
+
+    <div class="panel" style="margin-top:1.5rem">
+      <h1 style="font-size:1.6rem;margin-top:0">Pago del pedido</h1>
+      <p class="codigo-pedido" id="codigo">—</p>
+
+      <div id="resumen" style="margin-top:1.5rem"><p class="cargando">Cargando el pedido…</p></div>
+
+      <div id="acciones" style="display:grid;gap:.7rem;margin-top:1.8rem" hidden>
+        <button class="btn btn--acento btn--ancho" id="pagar">Simular pago correcto</button>
+        <button class="btn btn--linea btn--ancho" id="cancelar">Simular pago fallido</button>
+      </div>
+
+      <div id="mensaje" style="margin-top:1.2rem"></div>
+    </div>
+
+    <p style="text-align:center;margin-top:1.5rem;font-size:.88rem">
+      <a href="/carrito">Volver a la cesta</a>
+    </p>
+  </div>
+</main>
+
+<script src="/assets/js/comun.js?v=9835dc2f"></script>
+<script src="/assets/js/pago-simulado.js?v=ec3132df"></script>
+</body>
+</html>

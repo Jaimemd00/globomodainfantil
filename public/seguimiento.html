@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<meta name="theme-color" content="#fffdfe">
+<title>Seguir un pedido · Globo</title>
+<meta name="description" content="Consulta el estado de tu pedido de Globo con el número de pedido y tu correo electrónico.">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;1,6..12,400&family=Parisienne&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/estilos.css?v=4929a327">
+</head>
+<body>
+<a class="saltar" href="#principal">Saltar al contenido</a>
+<header id="cabecera"></header>
+
+<main id="principal" class="seccion seccion--menta">
+  <div class="contenedor">
+    <div id="celebracion"></div>
+
+    <div class="disposicion-2">
+      <div>
+        <p class="cejilla">Estado del envío</p>
+        <h1>¿Dónde está <span class="brocha">mi pedido</span>?</h1>
+        <p style="max-width:52ch;color:var(--tinta-70)">
+          No hace falta cuenta. Con el número que empieza por <strong>GLB-</strong> y el correo
+          con el que compraste puedes ver cada paso del envío.
+        </p>
+
+        <form class="formulario" id="formulario-seguimiento" style="max-width:440px;margin-top:1.8rem">
+          <div class="campo">
+            <label for="codigo">Número de pedido</label>
+            <input id="codigo" name="codigo" type="text" placeholder="GLB-260802-C1D4E7" required
+                   style="text-transform:uppercase">
+          </div>
+          <div class="campo">
+            <label for="email">Correo del pedido</label>
+            <input id="email" name="email" type="email" placeholder="tu@correo.es" required>
+          </div>
+          <button class="btn" type="submit" id="btn-buscar">Ver el estado</button>
+          <div id="mensaje"></div>
+        </form>
+      </div>
+
+      <aside class="panel panel--bruma">
+        <h3 style="margin-top:0">Cómo funciona</h3>
+        <ol style="padding-left:1.1rem;color:var(--tinta-70);font-size:.94rem">
+          <li>Recibimos el pedido y lo dejamos en cola.</li>
+          <li>Confirmamos el pago (inmediato con tarjeta).</li>
+          <li>Preparamos el pedido en la tienda de Écija.</li>
+          <li>Sale con el transportista, o te llamamos para que pases a recogerlo.</li>
+          <li>Entregado. Desde ahí, 30 días para cambios.</li>
+        </ol>
+        <p style="font-size:.88rem;color:var(--tinta-45);margin:0">
+          ¿No encuentras el número? Está en el correo de confirmación o en
+          <a href="/cuenta">tu portal de cliente</a>.
+        </p>
+      </aside>
+    </div>
+
+    <section id="resultado" hidden style="margin-top:4rem"></section>
+  </div>
+</main>
+
+<footer id="pie"></footer>
+<script src="/assets/js/comun.js?v=9835dc2f"></script>
+<script src="/assets/js/seguimiento.js?v=c98e1a5a"></script>
+</body>
+</html>

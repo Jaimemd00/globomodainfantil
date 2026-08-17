@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<meta name="theme-color" content="#fffdfe">
+<title>Mi cuenta · Globo</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;1,6..12,400&family=Parisienne&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/estilos.css?v=4929a327">
+</head>
+<body>
+<a class="saltar" href="#principal">Saltar al contenido</a>
+<header id="cabecera"></header>
+
+<main id="principal" class="seccion seccion--rosa">
+  <div class="contenedor">
+
+    <!-- Sin sesión -->
+    <section id="acceso" hidden>
+      <div class="disposicion-2">
+        <div>
+          <p class="cejilla">Portal de cliente</p>
+          <h1>Entra en <span class="brocha">tu cuenta</span></h1>
+
+          <div class="pestanas" role="tablist" style="max-width:440px">
+            <button role="tab" id="tab-entrar" aria-selected="true" aria-controls="panel-entrar">Iniciar sesión</button>
+            <button role="tab" id="tab-registro" aria-selected="false" aria-controls="panel-registro">Crear cuenta</button>
+          </div>
+
+          <div id="mensaje-acceso"></div>
+
+          <form class="formulario panel-pestana" id="panel-registro" role="tabpanel" hidden style="max-width:440px">
+            <div class="campo">
+              <label for="r-nombre">Nombre y apellidos</label>
+              <input id="r-nombre" type="text" autocomplete="name" required>
+            </div>
+            <div class="campo">
+              <label for="r-email">Correo electrónico</label>
+              <input id="r-email" type="email" autocomplete="email" required>
+            </div>
+            <div class="campo">
+              <label for="r-password">Contraseña</label>
+              <input id="r-password" type="password" autocomplete="new-password" required minlength="6">
+              <small>Mínimo 6 caracteres.</small>
+            </div>
+            <div class="formulario__fila">
+              <div class="campo">
+                <label for="r-telefono">Teléfono</label>
+                <input id="r-telefono" type="tel" autocomplete="tel">
+              </div>
+              <div class="campo">
+                <label for="r-cp">Código postal</label>
+                <input id="r-cp" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code">
+              </div>
+            </div>
+            <button class="btn btn--acento" type="submit">Crear mi cuenta</button>
+          </form>
+
+          <form class="formulario panel-pestana" id="panel-entrar" role="tabpanel" style="max-width:440px">
+            <div class="campo">
+              <label for="e-email">Correo electrónico</label>
+              <input id="e-email" type="email" autocomplete="email" required>
+            </div>
+            <div class="campo">
+              <label for="e-password">Contraseña</label>
+              <input id="e-password" type="password" autocomplete="current-password" required>
+            </div>
+            <button class="btn" type="submit">Entrar</button>
+          </form>
+        </div>
+
+        <aside class="panel panel--bruma">
+          <h3 style="margin-top:0">Con cuenta puedes</h3>
+          <ul style="padding-left:1.1rem;color:var(--tinta-70);font-size:.94rem">
+            <li>Ver el historial completo de pedidos.</li>
+            <li>Repetir una compra en la talla siguiente.</li>
+            <li>Guardar la dirección para no reescribirla.</li>
+            <li>Seguir los envíos sin buscar el número.</li>
+          </ul>
+          <p style="font-size:.9rem;margin-bottom:.4rem"><strong>¿Solo quieres ver un pedido?</strong></p>
+          <a class="btn btn--linea btn--peq" href="/seguimiento">Seguir un pedido sin cuenta</a>
+
+          <hr style="border:0;border-top:1px solid var(--linea);margin:1.5rem 0">
+          <p style="font-size:.85rem;color:var(--tinta-45);margin:0">
+            Datos de prueba<br>
+            cliente@ejemplo.es / cliente1234<br>
+            admin@modaglobo.es / admin1234
+          </p>
+        </aside>
+      </div>
+    </section>
+
+    <!-- Con sesión -->
+    <section id="portal" hidden>
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;gap:1.5rem;flex-wrap:wrap">
+        <div>
+          <p class="cejilla">Portal de cliente</p>
+          <h1 style="margin-bottom:.2rem" id="saludo">Hola</h1>
+          <p style="color:var(--tinta-70)" id="sub-saludo"></p>
+        </div>
+        <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+          <a class="btn btn--linea btn--peq" href="/admin" id="enlace-admin" hidden>Gestión de la tienda</a>
+          <button class="btn btn--linea btn--peq" id="salir">Cerrar sesión</button>
+        </div>
+      </div>
+
+      <div class="pestanas" role="tablist" style="margin-top:2rem">
+        <button role="tab" aria-selected="true" data-panel="p-pedidos">Mis pedidos</button>
+        <button role="tab" aria-selected="false" data-panel="p-datos">Mis datos</button>
+        <button role="tab" aria-selected="false" data-panel="p-seguridad">Contraseña</button>
+      </div>
+
+      <div class="panel-pestana" id="p-pedidos">
+        <div id="lista-pedidos"><p class="cargando">Cargando pedidos…</p></div>
+      </div>
+
+      <div class="panel-pestana" id="p-datos" hidden>
+        <form class="formulario" style="max-width:620px">
+          <div id="mensaje-datos"></div>
+          <div class="formulario__fila">
+            <div class="campo"><label for="d-nombre">Nombre y apellidos</label><input id="d-nombre" type="text" required></div>
+            <div class="campo"><label for="d-telefono">Teléfono</label><input id="d-telefono" type="tel"></div>
+          </div>
+          <div class="campo"><label for="d-direccion">Dirección</label><input id="d-direccion" type="text"></div>
+          <div class="formulario__fila">
+            <div class="campo"><label for="d-cp">Código postal</label><input id="d-cp" type="text" maxlength="5"></div>
+            <div class="campo"><label for="d-ciudad">Ciudad</label><input id="d-ciudad" type="text"></div>
+          </div>
+          <div class="campo"><label for="d-provincia">Provincia</label><input id="d-provincia" type="text"></div>
+          <button class="btn" type="submit" style="justify-self:start">Guardar cambios</button>
+        </form>
+      </div>
+
+      <div class="panel-pestana" id="p-seguridad" hidden>
+        <form class="formulario" style="max-width:440px">
+          <div id="mensaje-password"></div>
+          <div class="campo"><label for="s-actual">Contraseña actual</label><input id="s-actual" type="password" required></div>
+          <div class="campo"><label for="s-nueva">Contraseña nueva</label><input id="s-nueva" type="password" required minlength="6"></div>
+          <button class="btn" type="submit" style="justify-self:start">Cambiar la contraseña</button>
+        </form>
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<footer id="pie"></footer>
+<script src="/assets/js/comun.js?v=9835dc2f"></script>
+<script src="/assets/js/cuenta.js?v=b65da20f"></script>
+</body>
+</html>

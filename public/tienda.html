@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<meta name="theme-color" content="#fffdfe">
+<title>Catálogo · Globo</title>
+<meta name="description" content="Todo el catálogo de Globo: bebé, niña, niño, calzado y accesorios. Filtra por talla, precio y categoría.">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;1,6..12,400&family=Parisienne&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/estilos.css?v=4929a327">
+</head>
+<body>
+<a class="saltar" href="#principal">Saltar al contenido</a>
+<header id="cabecera"></header>
+
+<main id="principal" class="seccion seccion--crema">
+  <div class="contenedor">
+
+    <p class="migas"><a href="/">Inicio</a> / <span id="miga-actual">Catálogo</span></p>
+    <div class="seccion__encabezado">
+      <div>
+        <p class="cejilla" id="cejilla-catalogo">Catálogo completo</p>
+        <h2 id="titulo-catalogo">Todos los artículos</h2>
+        <p id="descripcion-catalogo">De 1 mes a 14 años. Filtra por talla para ver solo lo que hay disponible ahora mismo.</p>
+      </div>
+    </div>
+
+    <div class="tienda">
+      <button class="btn btn--linea filtros-movil" id="ver-filtros" aria-expanded="false" style="margin-bottom:1rem">
+        Filtrar y ordenar
+      </button>
+      <aside class="filtros" id="panel-filtros" aria-label="Filtros del catálogo">
+        <h3>Edad</h3>
+        <ul id="filtro-categorias"></ul>
+
+        <h3>Talla</h3>
+        <div class="pastillas" id="filtro-tallas"></div>
+
+        <h3>Precio máximo</h3>
+        <label class="solo-lectores" for="filtro-precio">Precio máximo</label>
+        <input type="range" id="filtro-precio" min="10" max="100" step="5" value="100" style="width:100%">
+        <p id="etiqueta-precio" style="margin:.3rem 0 0">Sin límite</p>
+
+        <h3>Otros</h3>
+        <div class="pastillas">
+          <button class="pastilla" data-marca="novedad" aria-pressed="false">Novedades</button>
+          <button class="pastilla" data-marca="rebaja" aria-pressed="false">Rebajados</button>
+        </div>
+
+        <button class="btn btn--linea btn--peq btn--ancho" id="limpiar" style="margin-top:1.4rem">Quitar filtros</button>
+      </aside>
+
+      <div>
+        <div class="barra-tienda">
+          <span class="barra-tienda__conteo" id="conteo">—</span>
+          <label style="display:flex;align-items:center;gap:.6rem">
+            <span class="etiqueta-campo" style="margin:0">Ordenar por</span>
+            <select id="orden" style="width:auto">
+              <option value="">Relevancia</option>
+              <option value="novedades">Novedades</option>
+              <option value="precio-asc">Precio: de menor a mayor</option>
+              <option value="precio-desc">Precio: de mayor a menor</option>
+              <option value="nombre">Nombre A–Z</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="rejilla-productos" id="rejilla"><p class="cargando">Cargando catálogo…</p></div>
+        <nav class="paginacion" id="paginacion" aria-label="Paginación"></nav>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<footer id="pie"></footer>
+<script src="/assets/js/comun.js?v=9835dc2f"></script>
+<script src="/assets/js/tienda.js?v=5ccb6643"></script>
+</body>
+</html>

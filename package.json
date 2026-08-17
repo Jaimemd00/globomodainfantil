@@ -1,0 +1,42 @@
+{
+  "name": "globo-tienda-basica",
+  "version": "1.0.0",
+  "description": "Globo Moda Infantil — tienda online (versión esencial)",
+  "main": "server/index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/index.js",
+    "dev": "node --watch server/index.js",
+    "seed": "node server/seed.js",
+    "reset": "node server/seed.js --force",
+    "test": "node pruebas.mjs && node pruebas-imagenes.mjs && node pruebas-pagos.mjs",
+    "admin": "node server/admin-cli.js",
+    "catalogo": "node server/sincronizar-catalogo.js",
+    "diagnostico": "node server/diagnostico.js",
+    "version-assets": "node server/sellar-version.js",
+    "prestart": "node server/sellar-version.js --silencioso",
+    "predev": "node server/sellar-version.js --silencioso"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "ecommerce",
+    "moda infantil",
+    "ecija",
+    "express",
+    "sqlite"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "dotenv": "^17.4.2",
+    "express": "^4.22.2",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^2.2.0",
+    "sharp": "^0.35.3"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^13.0.3"
+  }
+}

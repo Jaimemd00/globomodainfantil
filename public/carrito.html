@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<meta name="theme-color" content="#fffdfe">
+<title>Tu cesta · Globo</title>
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;1,6..12,400&family=Parisienne&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/estilos.css?v=4929a327">
+</head>
+<body>
+<a class="saltar" href="#principal">Saltar al contenido</a>
+<header id="cabecera"></header>
+
+<main id="principal" class="seccion seccion--crema">
+  <div class="contenedor">
+    <p class="migas"><a href="/">Inicio</a> / Cesta</p>
+    <h1>Tu <span class="brocha">cesta</span></h1>
+
+    <div class="disposicion-2" id="disposicion" style="margin-top:2rem">
+      <div>
+        <ul class="lineas" id="lineas" style="border-top:1px solid var(--linea)"></ul>
+        <a class="enlace-flecha" href="/tienda" style="display:inline-block;margin-top:1.5rem">Seguir comprando</a>
+      </div>
+
+      <aside class="panel panel--sticky">
+        <h3 style="margin-top:0">Resumen</h3>
+        <div class="resumen-fila"><span>Subtotal</span><span id="subtotal">—</span></div>
+        <div class="resumen-fila"><span>Envío</span><span id="envio">—</span></div>
+        <div class="resumen-fila resumen-fila--total"><span>Total</span><span id="total">—</span></div>
+        <p class="aviso-envio" id="aviso-envio" hidden></p>
+        <a class="btn btn--acento btn--ancho" href="/checkout" id="tramitar" style="margin-top:1.2rem">Finalizar pedido</a>
+        <p style="font-size:.85rem;color:var(--tinta-45);margin:.9rem 0 0;text-align:center">
+          Pago seguro · Cambios en 30 días · Recogida gratis en Écija
+        </p>
+      </aside>
+    </div>
+
+    <div class="vacio" id="vacio" hidden>
+      <h3>La cesta está vacía</h3>
+      <p>Cuando añadas artículos aparecerán aquí, con su talla y sus unidades.</p>
+      <a class="btn" href="/tienda">Ver el catálogo</a>
+    </div>
+  </div>
+</main>
+
+<footer id="pie"></footer>
+<script src="/assets/js/comun.js?v=9835dc2f"></script>
+<script src="/assets/js/carrito.js?v=42acf84a"></script>
+</body>
+</html>

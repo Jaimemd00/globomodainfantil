@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta name="darkreader-lock">
+<meta name="theme-color" content="#fffdfe">
+<title>Tramitar pedido · Globo</title>
+<meta name="robots" content="noindex">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;1,6..12,400&family=Parisienne&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/assets/css/estilos.css?v=4929a327">
+</head>
+<body>
+<a class="saltar" href="#principal">Saltar al contenido</a>
+<header id="cabecera"></header>
+
+<main id="principal" class="seccion seccion--lila">
+  <div class="contenedor">
+    <p class="migas"><a href="/carrito">Cesta</a> / Tramitar pedido</p>
+    <h1>Finalizar <span class="brocha">pedido</span></h1>
+
+    <div class="disposicion-2" style="margin-top:2rem">
+      <form id="formulario-pedido" novalidate>
+        <div id="mensaje"></div>
+
+        <div class="panel panel--bruma" id="aviso-cuenta" style="margin-bottom:1.5rem"></div>
+
+        <h3>1 · ¿Cómo lo quieres recibir?</h3>
+        <div class="opciones" style="margin-bottom:2rem">
+          <label class="opcion">
+            <input type="radio" name="metodo_envio" value="domicilio" checked>
+            <span>
+              <strong>Envío a casa</strong>
+              <span>Te llega en 24-48 h en península. Gratis a partir de 49 €.</span>
+            </span>
+            <span class="opcion__precio" id="precio-domicilio">4,95 €</span>
+          </label>
+          <label class="opcion">
+            <input type="radio" name="metodo_envio" value="recogida">
+            <span>
+              <strong>Recoger en la tienda</strong>
+              <span>Plaza Giles y Rubio, Écija. Te avisamos por teléfono cuando esté listo.</span>
+            </span>
+            <span class="opcion__precio" style="color:var(--menta)">Gratis</span>
+          </label>
+        </div>
+
+        <h3>2 · Tus datos</h3>
+        <div class="formulario">
+          <div class="formulario__fila">
+            <div class="campo">
+              <label for="nombre">Nombre y apellidos</label>
+              <input id="nombre" name="nombre" type="text" autocomplete="name" required>
+            </div>
+            <div class="campo">
+              <label for="telefono">Teléfono</label>
+              <input id="telefono" name="telefono" type="tel" autocomplete="tel" placeholder="600 000 000">
+            </div>
+          </div>
+
+          <div class="campo">
+            <label for="email">Correo electrónico</label>
+            <input id="email" name="email" type="email" autocomplete="email" required>
+            <small>Aquí te enviamos la confirmación y el número de seguimiento.</small>
+          </div>
+
+          <div id="bloque-direccion" class="formulario" style="gap:1.2rem">
+            <div class="campo">
+              <label for="direccion">Dirección</label>
+              <input id="direccion" name="direccion" type="text" autocomplete="street-address"
+                     placeholder="Calle, número, piso y puerta">
+            </div>
+
+            <div class="formulario__fila">
+              <div class="campo">
+                <label for="cp">Código postal</label>
+                <input id="cp" name="cp" type="text" inputmode="numeric" maxlength="5" autocomplete="postal-code">
+              </div>
+              <div class="campo">
+                <label for="ciudad">Ciudad</label>
+                <input id="ciudad" name="ciudad" type="text" autocomplete="address-level2">
+              </div>
+            </div>
+
+            <div class="formulario__fila">
+              <div class="campo">
+                <label for="provincia">Provincia</label>
+                <input id="provincia" name="provincia" type="text" autocomplete="address-level1">
+              </div>
+              <div class="campo">
+                <label for="pais">País</label>
+                <select id="pais" name="pais">
+                  <option>España</option>
+                  <option>Portugal</option>
+                  <option>Francia</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="alerta alerta--ok" id="aviso-recogida" hidden style="margin:0">
+            Recoges en <strong>Plaza Giles y Rubio, Écija</strong>. Te llamamos al teléfono que nos dejes
+            cuando el pedido esté preparado. No hace falta que pongas dirección.
+          </div>
+
+          <div class="campo">
+            <label for="notas">¿Algo que debamos saber?</label>
+            <textarea id="notas" name="notas" placeholder="Es un regalo, llamar antes de subir, dejar en portería…"></textarea>
+          </div>
+        </div>
+
+        <h3 style="margin-top:2.5rem">3 · Forma de pago</h3>
+        <div class="opciones">
+          <label class="opcion">
+            <input type="radio" name="metodo_pago" value="tarjeta" checked>
+            <span><strong>Tarjeta o Bizum</strong><span>Pago seguro al confirmar. En esta versión de pruebas no se hace ningún cargo real.</span></span>
+          </label>
+          <label class="opcion">
+            <input type="radio" name="metodo_pago" value="transferencia">
+            <span><strong>Transferencia</strong><span>Te mandamos los datos por correo y preparamos el pedido al recibir el pago.</span></span>
+          </label>
+          <label class="opcion">
+            <input type="radio" name="metodo_pago" value="contrareembolso">
+            <span><strong>Pagar al recibirlo</strong><span>Al repartidor o en el mostrador si vienes a recogerlo.</span></span>
+          </label>
+        </div>
+
+        <label style="display:flex;gap:.7rem;align-items:flex-start;margin-top:1.5rem;font-size:.92rem">
+          <input type="checkbox" id="acepto" required style="margin-top:.3rem;accent-color:var(--tinta)">
+          <span>He leído y acepto las <a href="/legal#condiciones">condiciones de compra</a> y la <a href="/legal#privacidad">política de privacidad</a>.</span>
+        </label>
+
+        <button class="btn btn--acento btn--ancho" type="submit" id="confirmar" style="margin-top:1.5rem">
+          Confirmar pedido
+        </button>
+      </form>
+
+      <aside class="panel panel--sticky">
+        <h3 style="margin-top:0">Tu pedido</h3>
+        <ul class="lineas" id="resumen-lineas" style="border-top:0"></ul>
+        <div class="resumen-fila"><span>Subtotal</span><span id="subtotal">—</span></div>
+        <div class="resumen-fila"><span>Envío</span><span id="envio">—</span></div>
+        <div class="resumen-fila resumen-fila--total"><span>Total</span><span id="total">—</span></div>
+        <a class="enlace-flecha" href="/carrito" style="display:inline-block;margin-top:1rem;font-size:.9rem">Editar la cesta</a>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<footer id="pie"></footer>
+<script src="/assets/js/comun.js?v=9835dc2f"></script>
+<script src="/assets/js/checkout.js?v=f13285f2"></script>
+</body>
+</html>
