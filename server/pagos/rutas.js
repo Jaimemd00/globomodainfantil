@@ -115,6 +115,11 @@ router.post('/sesion', async (req, res) => {
     db.prepare('UPDATE pedidos SET pago_ref = ?, pago_proveedor = ? WHERE id = ?').run(sesion.referencia, pasarela.PROVEEDOR, pedido.id);
     res.json({ url: sesion.url, referencia: sesion.referencia, simulacion: pasarela.esSimulacion() });
   } catch (e) {
+    /* Sin este registro, un fallo aquí no dejaba ningún rastro en el
+       servidor: el pedido se creaba bien pero la pasarela nunca se abría,
+       y el único sitio donde quedaba el motivo era la respuesta HTTP que
+       recibía el navegador — invisible desde los logs de pm2. */
+    console.error(`[pagos] no se pudo crear la sesión para ${pedido.codigo}:`, e.message);
     res.status(502).json({ error: e.message });
   }
 });

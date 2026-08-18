@@ -455,7 +455,14 @@ textarea { min-height: 96px; resize: vertical; }
 
 /* --------------------------------- Carrito -------------------------------- */
 
+/* Por defecto, un elemento dentro de una rejilla no encoge por debajo del
+   ancho mínimo de SU CONTENIDO, aunque ese contenido esté varios niveles
+   más adentro (aquí: rejilla > panel > gráfico de barras). El gráfico de
+   pedidos "pedía" sitio para sus 14 barras sin comprimirse, y ese ancho se
+   propagaba hacia arriba empujando toda la página a desbordar en móvil.
+   min-width: 0 en los hijos de la rejilla rompe esa cadena. */
 .disposicion-2 { display: grid; grid-template-columns: 1fr 400px; gap: 3rem; align-items: start; }
+.disposicion-2 > * { min-width: 0; }
 .lineas { list-style: none; margin: 0; padding: 0; }
 .linea {
   display: grid; grid-template-columns: 104px 1fr auto; gap: 1.3rem; align-items: center;
@@ -566,12 +573,17 @@ textarea { min-height: 96px; resize: vertical; }
    siempre tiene sitio garantizado. min-width en la tabla + overflow-x:auto
    en el contenedor son los que permiten el scroll horizontal en pantallas
    estrechas en vez de aplastar columnas. */
-table.datos { width: 100%; min-width: 620px; border-collapse: collapse; font-size: .94rem; table-layout: fixed; }
-/* El padding normal de celda (.9rem 1rem) se comía casi todo el ancho
-   reservado a la miniatura, dejando solo ~26px de hueco real para una
-   imagen de 44px. Esta celda necesita menos aire alrededor. */
-table.datos th:first-child, table.datos td:first-child { width: 64px; padding-left: .6rem; padding-right: .4rem; }
-table.datos td img { width: 44px; height: 55px; object-fit: cover; display: block; }
+table.datos { width: 100%; border-collapse: collapse; font-size: .94rem; }
+/* El ancho mínimo con reparto fijo de columnas SOLO se aplica a las tablas
+   que ya están dentro de .tabla-envoltorio (que sabe desbordarse con scroll
+   horizontal). Aplicado a table.datos en general, una tabla suelta como la
+   de "Stock bajo" —sin ese contenedor— no tenía dónde desbordarse y
+   empujaba la página entera fuera de la pantalla en móvil. */
+.tabla-envoltorio table.datos { min-width: 620px; table-layout: fixed; }
+.tabla-envoltorio table.datos th:first-child, .tabla-envoltorio table.datos td:first-child {
+  width: 64px; padding-left: .6rem; padding-right: .4rem;
+}
+.tabla-envoltorio table.datos td img { width: 44px; height: 55px; object-fit: cover; display: block; }
 table.datos th {
   text-align: left; font-family: var(--display); font-weight: 700; font-size: .78rem;
   letter-spacing: .08em; text-transform: uppercase; color: var(--tinta-45);
