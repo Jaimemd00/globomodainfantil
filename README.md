@@ -311,4 +311,3 @@ Están detallados en `DESPLIEGUE.md`, pero en resumen:
 ---
 
 Hecho con Node.js, Express y SQLite. Licencia MIT.
-"# globomodainfantil" 

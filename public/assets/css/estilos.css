@@ -461,7 +461,16 @@ textarea { min-height: 96px; resize: vertical; }
   display: grid; grid-template-columns: 104px 1fr auto; gap: 1.3rem; align-items: center;
   padding: 1.3rem 0; border-bottom: 2px solid var(--linea);
 }
-.linea img { width: 104px; border-radius: var(--radio); background: var(--nieve); border: 1px solid var(--linea); }
+/* Sin altura fija: la reserva el propio navegador a partir de los atributos
+   width/height del HTML de cada página (70, 92, 115 px...), que es el
+   comportamiento nativo para elementos con ambos atributos. object-fit
+   asegura que, aunque el archivo real no coincida al milímetro, no se
+   deforme ninguna proporción. */
+.linea img {
+  width: 104px; height: auto;
+  border-radius: var(--radio); background: var(--crema);
+  border: 2px solid var(--linea-fuerte); object-fit: contain; display: block;
+}
 .linea__nombre { font-family: var(--display); font-weight: 700; font-size: 1.05rem; margin: 0 0 .2rem; }
 .linea__meta { font-size: .88rem; color: var(--tinta-45); }
 .linea__quitar { background: none; border: 0; color: var(--tinta-45); font: inherit; font-size: .86rem; cursor: pointer; text-decoration: underline; padding: .3rem 0; margin-top: .3rem; }
@@ -548,7 +557,21 @@ textarea { min-height: 96px; resize: vertical; }
 /* ---------------------------------- Tablas -------------------------------- */
 
 .tabla-envoltorio { overflow-x: auto; border: 1.5px solid var(--linea-fuerte); border-radius: var(--radio-g); background: var(--blanco); }
-table.datos { width: 100%; border-collapse: collapse; font-size: .94rem; }
+/* Con table-layout: auto (el valor por defecto), el navegador reparte el
+   ancho de las columnas según el CONTENIDO DE TEXTO de toda la tabla, y
+   puede dejar la columna de la foto en un par de píxeles si el resto pide
+   más sitio — el ancho que se le pida a la <img> con CSS no basta para
+   evitarlo. table-layout: fixed hace que el reparto lo decidan los anchos
+   que se fijan aquí, no el contenido, así que la columna de la foto
+   siempre tiene sitio garantizado. min-width en la tabla + overflow-x:auto
+   en el contenedor son los que permiten el scroll horizontal en pantallas
+   estrechas en vez de aplastar columnas. */
+table.datos { width: 100%; min-width: 620px; border-collapse: collapse; font-size: .94rem; table-layout: fixed; }
+/* El padding normal de celda (.9rem 1rem) se comía casi todo el ancho
+   reservado a la miniatura, dejando solo ~26px de hueco real para una
+   imagen de 44px. Esta celda necesita menos aire alrededor. */
+table.datos th:first-child, table.datos td:first-child { width: 64px; padding-left: .6rem; padding-right: .4rem; }
+table.datos td img { width: 44px; height: 55px; object-fit: cover; display: block; }
 table.datos th {
   text-align: left; font-family: var(--display); font-weight: 700; font-size: .78rem;
   letter-spacing: .08em; text-transform: uppercase; color: var(--tinta-45);
@@ -668,7 +691,7 @@ table.datos tbody tr:hover { background: var(--rosa-suave); }
   .marca__firma { font-size: 1.7rem; }
   .formulario__fila { grid-template-columns: 1fr; }
   .linea { grid-template-columns: 78px 1fr; gap: 1rem; }
-  .linea img { width: 78px; }
+  .linea img { width: 78px; }  /* aspect-ratio y object-fit ya vienen de la regla base */
   .linea > div:last-child { grid-column: 2; text-align: right; }
   .seccion { padding: 3rem 0; }
   .pie__rejilla { grid-template-columns: 1fr; gap: 2rem; }

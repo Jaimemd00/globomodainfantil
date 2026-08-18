@@ -266,8 +266,7 @@ function formularioProducto(p = null) {
       ${p
         ? bloqueFotos(p.id)
         : `<div class="alerta alerta--info" style="margin:0">
-             Crea primero el artículo y, al volver a abrirlo, podrás subirle las fotos
-             arrastrándolas, o generarlas desde el <strong>Estudio de fotos</strong>.
+             Crea primero el artículo y, al volver a abrirlo, podrás subirle las fotos arrastrándolas.
            </div>`}
       <input id="p-imagen" type="hidden" value="${esc(p?.imagen || '/img/productos/generico.svg')}">
 
