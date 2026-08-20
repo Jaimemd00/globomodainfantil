@@ -229,5 +229,35 @@ comprobar('la portada del artículo apunta a un archivo', /\.(webp|jpg|png|svg)$
 comprobar('los relacionados también traen imagen',
   fichaCompleta.cuerpo.relacionados.every((r) => !!r.imagen));
 
+/* ------------------- Rectificar una talla la reemplaza de verdad ---------- */
+
+/* Existía un fallo real: corregir el texto de una talla (ej. un fallo de
+   tecleo) daba de alta la nueva SIN borrar la vieja, así que la tienda
+   seguía enseñando y vendiendo la talla que se creía corregida. */
+const nuevoArt = await llamar('/api/admin/productos', {
+  method: 'POST', headers: admin,
+  body: JSON.stringify({
+    nombre: 'Prueba de tallas', categoria_id: 'complementos', precio: 9.95,
+    variantes: [{ talla: '0M', stock: 5 }]
+  })
+});
+comprobar('crea el artículo de prueba con una talla', nuevoArt.estado === 201, JSON.stringify(nuevoArt.cuerpo).slice(0,120));
+const idPrueba = nuevoArt.cuerpo.producto.id;
+
+await llamar(`/api/admin/productos/${idPrueba}`, {
+  method: 'PUT', headers: admin, body: JSON.stringify({ variantes: [{ talla: 'RN', stock: 5 }] })
+});
+const trasRenombrar = await llamar(`/api/admin/productos`, { headers: admin });
+const prodTallas = trasRenombrar.cuerpo.productos.find((p) => p.id === idPrueba);
+comprobar('renombrar una talla no deja la vieja huérfana', prodTallas?.variantes.length === 1 && prodTallas.variantes[0].talla === 'RN',
+  JSON.stringify(prodTallas?.variantes));
+
+await llamar(`/api/admin/productos/${idPrueba}`, { method: 'PUT', headers: admin, body: JSON.stringify({ variantes: [] }) });
+const trasVaciar = await llamar(`/api/admin/productos`, { headers: admin });
+comprobar('quitar todas las tallas las borra de verdad',
+  trasVaciar.cuerpo.productos.find((p) => p.id === idPrueba).variantes.length === 0);
+
+await llamar(`/api/admin/productos/${idPrueba}`, { method: 'DELETE', headers: admin });
+
 console.log(`\n  ${ok} correctas · ${fallos} fallidas\n`);
 process.exit(fallos ? 1 : 0);

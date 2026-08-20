@@ -38,5 +38,9 @@
   },
   "optionalDependencies": {
     "better-sqlite3": "^13.0.3"
+  },
+  "devDependencies": {
+    "jsdom": "^30.0.1",
+    "playwright": "^1.62.1"
   }
 }

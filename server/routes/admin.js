@@ -158,13 +158,44 @@ router.put('/productos/:id', (req, res) => {
   });
 
   if (Array.isArray(b.variantes)) {
-    const upsert = db.prepare(
-      `INSERT INTO variantes (producto_id, talla, stock) VALUES (?, ?, ?)
-       ON CONFLICT(producto_id, talla) DO UPDATE SET stock = excluded.stock`
-    );
-    for (const v of b.variantes) {
-      if (v && v.talla) upsert.run(actual.id, String(v.talla).trim(), Math.max(0, parseInt(v.stock, 10) || 0));
-    }
+    /*
+     * El formulario de tallas no tiene un identificador estable por fila:
+     * el propio texto de la talla ES la clave. Antes, esto solo daba de
+     * alta o actualizaba el stock de las tallas que llegaban, pero nunca
+     * borraba las que ya no estaban en la lista enviada.
+     *
+     * Consecuencia real: si se corregía el texto de una talla (un fallo de
+     * tecleo, "0M" por "RN"), el formulario mandaba la nueva talla, el
+     * servidor la daba de alta... y la talla vieja se quedaba intacta en la
+     * base de datos, todavía visible y comprable en la tienda. El panel
+     * decía "guardado" porque técnicamente no fallaba nada — simplemente no
+     * borraba lo que sobraba.
+     *
+     * Ahora el envío se trata como la lista COMPLETA y definitiva de tallas
+     * del artículo: se borra cualquier talla que ya no esté en la lista, y
+     * se da de alta o actualiza el resto. Es lo que espera quien edita un
+     * formulario: lo que ve en pantalla es lo que queda guardado.
+     */
+    const limpias = b.variantes
+      .filter((v) => v && String(v.talla || '').trim())
+      .map((v) => ({ talla: String(v.talla).trim(), stock: Math.max(0, parseInt(v.stock, 10) || 0) }));
+
+    const nombres = limpias.map((v) => v.talla);
+    const existentes = db.prepare('SELECT talla FROM variantes WHERE producto_id = ?').all(actual.id).map((v) => v.talla);
+    const sobran = existentes.filter((t) => !nombres.includes(t));
+
+    const sincronizar = db.transaction(() => {
+      if (sobran.length) {
+        const marcadores = sobran.map(() => '?').join(',');
+        db.prepare(`DELETE FROM variantes WHERE producto_id = ? AND talla IN (${marcadores})`).run(actual.id, ...sobran);
+      }
+      const upsert = db.prepare(
+        `INSERT INTO variantes (producto_id, talla, stock) VALUES (?, ?, ?)
+         ON CONFLICT(producto_id, talla) DO UPDATE SET stock = excluded.stock`
+      );
+      for (const v of limpias) upsert.run(actual.id, v.talla, v.stock);
+    });
+    sincronizar();
   }
 
   res.json({ producto: db.prepare('SELECT * FROM productos WHERE id = ?').get(actual.id) });
