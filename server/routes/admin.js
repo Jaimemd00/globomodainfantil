@@ -4,6 +4,7 @@ const express = require('express');
 const { db, ESTADOS, ESTADOS_TEXTO } = require('../db');
 const { soloAdmin } = require('../middleware/auth');
 const { sincronizarPortada } = require('../imagen/portada');
+const img = require('../imagen/procesar');
 const { cargarPedido } = require('./pedidos');
 const { restaurarStock } = require('../pagos/rutas');
 
@@ -218,6 +219,48 @@ router.delete('/productos/:id', (req, res) => {
   res.json({ ok: true });
 });
 
+/**
+ * DELETE /api/admin/productos/:id/eliminar — borrado DEFINITIVO.
+ *
+ * Distinto del "Ocultar" de arriba: esto borra la fila de verdad. Cada línea
+ * de pedido guarda su propia copia del nombre, precio, talla y foto en el
+ * momento de la compra (no depende en vivo del producto), así que borrar un
+ * artículo que ya se ha vendido no rompe el historial — solo pierde el
+ * enlace "ver ficha" hacia un producto que ya no existe, lo cual es lógico.
+ *
+ * Aun así, es un borrado permanente, así que si el artículo tiene pedidos
+ * detrás, se exige una confirmación explícita en una segunda llamada: la
+ * primera solo informa de cuántos pedidos se verían afectados, sin borrar
+ * nada todavía.
+ */
+router.delete('/productos/:id/eliminar', (req, res) => {
+  const producto = db.prepare('SELECT * FROM productos WHERE id = ?').get(req.params.id);
+  if (!producto) return res.status(404).json({ error: 'Ese artículo no existe.' });
+
+  const pedidosAfectados = db
+    .prepare('SELECT COUNT(DISTINCT pedido_id) AS n FROM pedido_lineas WHERE producto_id = ?')
+    .get(producto.id).n;
+
+  const confirmado = req.query.confirmar === '1' || req.body?.confirmar === true;
+  if (pedidosAfectados > 0 && !confirmado) {
+    const mensaje = `Este artículo aparece en ${pedidosAfectados} ${pedidosAfectados === 1 ? 'pedido' : 'pedidos'}. Esos pedidos conservan el nombre, la foto y el precio de la compra, pero perderán el enlace a la ficha. Confirma para borrarlo de todos modos.`;
+    return res.status(409).json({ requiereConfirmacion: true, pedidos_afectados: pedidosAfectados, error: mensaje, mensaje });
+  }
+
+  const rutas = db.prepare('SELECT ruta, miniatura FROM producto_imagenes WHERE producto_id = ?').all(producto.id);
+
+  db.prepare('DELETE FROM productos WHERE id = ?').run(producto.id);
+  /* Las filas de variantes y producto_imagenes se borran solas por el
+     CASCADE del esquema; aquí solo queda limpiar los ARCHIVOS del disco,
+     que la base de datos no gestiona. */
+  for (const r of rutas) {
+    img.borrar(r.ruta);
+    img.borrar(r.miniatura);
+  }
+
+  res.json({ ok: true, pedidos_afectados: pedidosAfectados });
+});
+
 /* --------------------------------- Pedidos -------------------------------- */
 
 // GET /api/admin/pedidos?estado=&q=
@@ -282,6 +325,34 @@ router.get('/clientes', (_req, res) => {
     )
     .all();
   res.json({ clientes });
+});
+
+/**
+ * DELETE /api/admin/clientes/:id — borrado definitivo de una cuenta de cliente.
+ *
+ * Sus pedidos se conservan (el esquema los desvincula con SET NULL, no los
+ * borra): quedan como ventas registradas para la contabilidad, simplemente
+ * sin una cuenta activa detrás. Es el mismo motivo por el que no se borran
+ * los artículos vendidos: el historial de ventas no depende de que la
+ * cuenta o el producto originales sigan existiendo.
+ *
+ * Nunca borra una cuenta de administración por esta vía, aunque alguien
+ * intente forzar el id: esta ruta es solo para clientes.
+ */
+router.delete('/clientes/:id', (req, res) => {
+  const cliente = db.prepare("SELECT * FROM usuarios WHERE id = ? AND rol = 'cliente'").get(req.params.id);
+  if (!cliente) return res.status(404).json({ error: 'Ese cliente no existe.' });
+
+  const pedidos = db.prepare('SELECT COUNT(*) AS n FROM pedidos WHERE usuario_id = ?').get(cliente.id).n;
+
+  const confirmado = req.query.confirmar === '1' || req.body?.confirmar === true;
+  if (pedidos > 0 && !confirmado) {
+    const mensaje = `${cliente.nombre} tiene ${pedidos} ${pedidos === 1 ? 'pedido registrado' : 'pedidos registrados'}. Se conservan como ventas, pero dejarán de estar asociados a su cuenta. Confirma para borrar la cuenta de todos modos.`;
+    return res.status(409).json({ requiereConfirmacion: true, pedidos_afectados: pedidos, error: mensaje, mensaje });
+  }
+
+  db.prepare('DELETE FROM usuarios WHERE id = ?').run(cliente.id);
+  res.json({ ok: true, pedidos_afectados: pedidos });
 });
 
 module.exports = router;

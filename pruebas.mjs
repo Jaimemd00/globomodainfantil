@@ -275,5 +275,64 @@ comprobar('el marco de la foto reserva su proporción 4:5',
 comprobar('las líneas de la cesta tampoco se estiran',
   /\.linea\s*img\s*\{[^}]*object-fit\s*:\s*contain/.test(css));
 
+/* ------------------- Borrado definitivo de artículos y clientes ----------- */
+
+/* Un artículo nunca vendido se borra sin más ceremonia. */
+const paraBorrar = await llamar('/api/admin/productos', {
+  method: 'POST', headers: admin,
+  body: JSON.stringify({ nombre: 'Prueba borrado limpio', categoria_id: 'complementos', precio: 9.95 })
+});
+const idBorrar = paraBorrar.cuerpo.producto.id;
+const borradoLimpio = await llamar(`/api/admin/productos/${idBorrar}/eliminar`, { method: 'DELETE', headers: admin });
+comprobar('borra sin pedir confirmación un artículo nunca vendido', borradoLimpio.estado === 200 && borradoLimpio.cuerpo.pedidos_afectados === 0);
+
+const listaTrasBorrar = await llamar('/api/admin/productos', { headers: admin });
+comprobar('el artículo borrado desaparece del listado',
+  !listaTrasBorrar.cuerpo.productos.some((p) => p.id === idBorrar));
+
+/* Un artículo CON ventas exige confirmación explícita, y el pedido conserva
+   su propia copia de los datos aunque el producto deje de existir. */
+const conVentas = await llamar('/api/admin/productos', {
+  method: 'POST', headers: admin,
+  body: JSON.stringify({ nombre: 'Prueba con ventas', categoria_id: 'complementos', precio: 20, variantes: [{ talla: 'Única', stock: 5 }] })
+});
+const idVentas = conVentas.cuerpo.producto.id;
+const pedidoDePrueba = await llamar('/api/pedidos', {
+  method: 'POST',
+  body: JSON.stringify({
+    nombre: 'Compradora', email: `compra${azar}@test.es`, direccion: 'C 1', ciudad: 'Écija', cp: '41400', provincia: 'Sevilla',
+    metodo_pago: 'transferencia', items: [{ producto_id: idVentas, talla: 'Única', cantidad: 1 }]
+  })
+});
+
+const sinConfirmar = await llamar(`/api/admin/productos/${idVentas}/eliminar`, { method: 'DELETE', headers: admin });
+comprobar('rechaza borrar un artículo vendido sin confirmar', sinConfirmar.estado === 409 && sinConfirmar.cuerpo.pedidos_afectados === 1);
+
+const conConfirmar = await llamar(`/api/admin/productos/${idVentas}/eliminar?confirmar=1`, { method: 'DELETE', headers: admin });
+comprobar('borra el artículo vendido al confirmar', conConfirmar.estado === 200);
+
+const seguimientoTrasBorrar = await llamar('/api/seguimiento', {
+  method: 'POST', body: JSON.stringify({ codigo: pedidoDePrueba.cuerpo.pedido.codigo, email: `compra${azar}@test.es` })
+});
+comprobar('el pedido conserva nombre y precio aunque el producto ya no exista',
+  seguimientoTrasBorrar.cuerpo.pedido.lineas[0].nombre === 'Prueba con ventas' && seguimientoTrasBorrar.cuerpo.pedido.lineas[0].precio === 20);
+
+/* Un cliente sin pedidos se borra sin más; nunca se puede borrar un admin
+   por esta vía, aunque se fuerce su id. */
+await llamar('/api/auth/registro', {
+  method: 'POST', body: JSON.stringify({ nombre: 'Cliente Prueba', email: `clientep${azar}@test.es`, password: 'clave1234' })
+});
+const listaClientes = await llamar('/api/admin/clientes', { headers: admin });
+const idClientePrueba = listaClientes.cuerpo.clientes.find((c) => c.email === `clientep${azar}@test.es`).id;
+const borradoCliente = await llamar(`/api/admin/clientes/${idClientePrueba}`, { method: 'DELETE', headers: admin });
+comprobar('borra sin pedir confirmación un cliente sin pedidos', borradoCliente.estado === 200);
+
+const intentoAdmin = await llamar('/api/admin/clientes/1', { method: 'DELETE', headers: admin });
+comprobar('nunca se puede borrar la cuenta de administración por esta vía', intentoAdmin.estado === 404);
+const loginTrasIntento = await llamar('/api/auth/login', {
+  method: 'POST', body: JSON.stringify({ email: 'admin@modaglobo.es', password: 'admin1234' })
+});
+comprobar('la cuenta de administración sigue intacta', loginTrasIntento.estado === 200);
+
 console.log(`\n  ${ok} correctas · ${fallos} fallidas\n`);
 process.exit(fallos ? 1 : 0);

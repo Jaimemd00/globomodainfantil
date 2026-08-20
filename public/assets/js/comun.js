@@ -27,7 +27,11 @@ const API = {
     }
     if (!respuesta.ok) {
       if (respuesta.status === 401 && this.token) Sesion.cerrar(false);
-      throw new Error(datos.error || 'No hemos podido completar la operación.');
+      /* Algunos errores traen más datos aparte del mensaje (por ejemplo,
+         cuántos pedidos afectaría borrar un artículo). Sin esto, cualquier
+         código que mirase e.pedidos_afectados o similar se encontraría
+         siempre con undefined, aunque el servidor sí lo hubiera mandado. */
+      throw Object.assign(new Error(datos.error || datos.mensaje || 'No hemos podido completar la operación.'), datos);
     }
     return datos;
   },

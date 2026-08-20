@@ -207,6 +207,7 @@ async function cargarProductos() {
           <td style="white-space:nowrap">
             <button class="btn btn--linea btn--peq" data-editar="${p.id}">Editar</button>
             ${p.activo ? `<button class="btn btn--linea btn--peq" data-ocultar="${p.id}">Ocultar</button>` : ''}
+            <button class="btn btn--peligro btn--peq" data-eliminar="${p.id}" data-nombre="${esc(p.nombre)}">Eliminar</button>
           </td>
         </tr>`
           )
@@ -224,8 +225,42 @@ async function cargarProductos() {
         cargarProductos();
       })
     );
+    cuerpo.querySelectorAll('[data-eliminar]').forEach((b) =>
+      b.addEventListener('click', () => eliminarProducto(b.dataset.eliminar, b.dataset.nombre))
+    );
   } catch (e) {
     cuerpo.innerHTML = `<tr><td colspan="8" class="cargando">${esc(e.message)}</td></tr>`;
+  }
+}
+
+/**
+ * Borra un artículo de verdad, no lo oculta.
+ *
+ * Primero se llama sin confirmar: si el artículo nunca se ha vendido, el
+ * servidor lo borra directamente. Si aparece en algún pedido, el servidor
+ * responde sin borrar nada y dice cuántos — con eso se pide una segunda
+ * confirmación bien explícita, escribiendo el nombre del artículo, antes de
+ * repetir la llamada ya confirmada.
+ */
+async function eliminarProducto(id, nombre) {
+  if (!confirm(`¿Borrar "${nombre}" para siempre? Esto no se puede deshacer.`)) return;
+
+  try {
+    await API.del(`/admin/productos/${id}/eliminar`);
+    avisar('Artículo eliminado.', 'ok');
+    cargarProductos();
+  } catch (e) {
+    /* API.del lanza con el cuerpo del error si el servidor respondió 409:
+       ahí viene el aviso de cuántos pedidos le afectan. */
+    if (e.pedidos_afectados) {
+      const escrito = prompt(`${e.message}\n\nPara confirmar, escribe el nombre del artículo: ${nombre}`);
+      if (escrito !== nombre) return;
+      await API.del(`/admin/productos/${id}/eliminar?confirmar=1`);
+      avisar('Artículo eliminado.', 'ok');
+      cargarProductos();
+    } else {
+      avisar(e.message, 'error');
+    }
   }
 }
 
@@ -359,12 +394,48 @@ async function cargarClientes() {
           <td class="num">${c.pedidos}</td>
           <td class="num">${eur(c.gastado)}</td>
           <td class="mono">${fecha(c.creado_en)}</td>
+          <td style="white-space:nowrap">
+            <button class="btn btn--peligro btn--peq" data-eliminar-cliente="${c.id}"
+                    data-nombre="${esc(c.nombre)}" data-pedidos="${c.pedidos}">Eliminar</button>
+          </td>
         </tr>`
           )
           .join('')
-      : '<tr><td colspan="6" class="cargando">Todavía no hay clientes registrados.</td></tr>';
+      : '<tr><td colspan="7" class="cargando">Todavía no hay clientes registrados.</td></tr>';
+
+    cuerpo.querySelectorAll('[data-eliminar-cliente]').forEach((b) =>
+      b.addEventListener('click', () =>
+        eliminarCliente(b.dataset.eliminarCliente, b.dataset.nombre, Number(b.dataset.pedidos)))
+    );
   } catch (e) {
-    cuerpo.innerHTML = `<tr><td colspan="6" class="cargando">${esc(e.message)}</td></tr>`;
+    cuerpo.innerHTML = `<tr><td colspan="7" class="cargando">${esc(e.message)}</td></tr>`;
+  }
+}
+
+/**
+ * Borra la cuenta de un cliente de verdad. Sus pedidos se conservan como
+ * ventas (la base de datos los desvincula, no los borra): por eso, si ya
+ * tiene pedidos, se pide confirmar escribiendo su nombre — igual que al
+ * borrar un artículo vendido.
+ */
+async function eliminarCliente(id, nombre, pedidos) {
+  const aviso = pedidos > 0
+    ? `${nombre} tiene ${pedidos} ${pedidos === 1 ? 'pedido' : 'pedidos'}. Se conservan como ventas, pero la cuenta desaparece para siempre.\n\nPara confirmar, escribe su nombre: ${nombre}`
+    : null;
+
+  if (aviso) {
+    const escrito = prompt(aviso);
+    if (escrito !== nombre) return;
+  } else if (!confirm(`¿Borrar la cuenta de ${nombre} para siempre? Esto no se puede deshacer.`)) {
+    return;
+  }
+
+  try {
+    await API.del(`/admin/clientes/${id}${pedidos > 0 ? '?confirmar=1' : ''}`);
+    avisar('Cliente eliminado.', 'ok');
+    cargarClientes();
+  } catch (e) {
+    avisar(e.message, 'error');
   }
 }
 

@@ -214,6 +214,10 @@ p { margin: 0 0 1rem; }
 .btn--acento { background: var(--rosa-medio); border-color: var(--rosa-fuerte); color: var(--tinta); }
 .btn--acento:hover { background: var(--rosa-fuerte); border-color: var(--rosa-fuerte); color: var(--tinta); }
 .btn--linea { background: transparent; border-color: var(--linea-fuerte); color: var(--tinta); }
+/* Para acciones que borran de verdad (no "ocultar"): un rojo discreto pero
+   inconfundible, para que no se confunda con las acciones normales. */
+.btn--peligro { background: transparent; border-color: #e8b4bd; color: #a83246; }
+.btn--peligro:hover { background: #fdecee; border-color: #d4899a; color: #8a2438; }
 .btn--linea:hover { background: var(--rosa-claro); border-color: var(--rosa-medio); color: var(--tinta); }
 .btn--claro { background: #fff; border-color: var(--linea-fuerte); color: var(--tinta); }
 .btn--claro:hover { background: var(--rosa); border-color: var(--rosa-medio); color: var(--tinta); }
@@ -593,9 +597,16 @@ table.datos { width: 100%; border-collapse: collapse; font-size: .94rem; }
    horizontal). Aplicado a table.datos en general, una tabla suelta como la
    de "Stock bajo" —sin ese contenedor— no tenía dónde desbordarse y
    empujaba la página entera fuera de la pantalla en móvil. */
-.tabla-envoltorio table.datos { min-width: 620px; table-layout: fixed; }
+.tabla-envoltorio table.datos { min-width: 820px; table-layout: fixed; }
 .tabla-envoltorio table.datos th:first-child, .tabla-envoltorio table.datos td:first-child {
   width: 64px; padding-left: .6rem; padding-right: .4rem;
+}
+/* La columna de acciones es la única con un número variable de botones (de
+   uno a tres, según la tabla), así que se le reserva ancho aparte en vez de
+   dejar que el reparto igual de table-layout:fixed la deje corta y obligue
+   a hacer scroll para ver el último botón en un escritorio normal. */
+.tabla-envoltorio table.datos th:last-child, .tabla-envoltorio table.datos td:last-child {
+  width: 320px;
 }
 .tabla-envoltorio table.datos td img { width: 44px; height: 55px; object-fit: cover; display: block; }
 table.datos th {
