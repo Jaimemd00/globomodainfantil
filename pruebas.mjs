@@ -259,5 +259,21 @@ comprobar('quitar todas las tallas las borra de verdad',
 
 await llamar(`/api/admin/productos/${idPrueba}`, { method: 'DELETE', headers: admin });
 
+/* --------- El CSS crítico de las fotos no se ha perdido en el camino ------ */
+
+/* Esta regla concreta ya se ha perdido dos veces en el camino entre las dos
+   versiones del proyecto (esencial y completa) al copiar el CSS de una a
+   otra. Sin object-fit, las fotos de la ficha de producto se ven estiradas
+   y deformadas, sobre todo en móvil. Se comprueba aquí para que un despiste
+   al copiar archivos no vuelva a colarse hasta producción sin que salte
+   ninguna alarma. */
+const css = await (await fetch(`${B}/assets/css/estilos.css`)).text();
+comprobar('la foto de la ficha tiene object-fit (no se estira)',
+  /\.producto__medio\s*img\s*\{[^}]*object-fit\s*:\s*contain/.test(css));
+comprobar('el marco de la foto reserva su proporción 4:5',
+  /\.producto__medio\s*\{[^}]*aspect-ratio\s*:\s*4\s*\/\s*5/.test(css));
+comprobar('las líneas de la cesta tampoco se estiran',
+  /\.linea\s*img\s*\{[^}]*object-fit\s*:\s*contain/.test(css));
+
 console.log(`\n  ${ok} correctas · ${fallos} fallidas\n`);
 process.exit(fallos ? 1 : 0);
