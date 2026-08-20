@@ -71,6 +71,22 @@ async function subir(ruta, formData) {
 async function pintarGaleria(productoId, host) {
   try {
     const { imagenes } = await API.get(`/admin/productos/${productoId}/imagenes`);
+
+    /*
+     * El campo oculto #p-imagen viaja en el mismo formulario y es lo que se
+     * manda al guardar el resto de datos (precio, tallas...). Si se sube o
+     * se cambia la portada SIN tocar ese campo, quedaba con el valor de
+     * cuando se abrió el modal — casi siempre "generico.svg" en un
+     * artículo recién creado. Al pulsar "Guardar cambios" para cualquier
+     * otro campo, ese valor viejo pisaba la portada real que se acababa de
+     * fijar, y la tienda volvía a enseñar el dibujo de repuesto aunque la
+     * ficha del artículo sí tuviera la foto de verdad.
+     */
+    const campoOculto = document.getElementById('p-imagen');
+    if (campoOculto) {
+      const principal = imagenes.find((i) => i.principal) || imagenes[0];
+      if (principal) campoOculto.value = principal.ruta;
+    }
     host.innerHTML = imagenes.length
       ? `<div class="galeria">${imagenes
           .map(

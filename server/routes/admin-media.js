@@ -10,6 +10,7 @@
 const express = require('express');
 const multer = require('multer');
 const { db } = require('../db');
+const { sincronizarPortada } = require('../imagen/portada');
 const { soloAdmin } = require('../middleware/auth');
 const img = require('../imagen/procesar');
 
@@ -31,29 +32,7 @@ function galeria(productoId) {
     .all(productoId);
 }
 
-/**
- * Mantiene sincronizado el campo `imagen` del producto con su portada.
- * Si la imagen marcada como principal ya no existe —porque se acaba de
- * borrar—, asciende a la siguiente: sin esto el artículo se quedaba sin
- * ninguna marcada y la galería perdía la referencia.
- */
-function sincronizarPortada(productoId) {
-  const hayPrincipal = db
-    .prepare('SELECT 1 FROM producto_imagenes WHERE producto_id = ? AND principal = 1')
-    .get(productoId);
 
-  if (!hayPrincipal) {
-    const siguiente = db
-      .prepare('SELECT id FROM producto_imagenes WHERE producto_id = ? ORDER BY orden, id LIMIT 1')
-      .get(productoId);
-    if (siguiente) db.prepare('UPDATE producto_imagenes SET principal = 1 WHERE id = ?').run(siguiente.id);
-  }
-
-  const portada = db
-    .prepare('SELECT ruta FROM producto_imagenes WHERE producto_id = ? ORDER BY principal DESC, orden, id LIMIT 1')
-    .get(productoId);
-  if (portada) db.prepare('UPDATE productos SET imagen = ? WHERE id = ?').run(portada.ruta, productoId);
-}
 
 // GET /api/admin/productos/:id/imagenes
 router.get('/productos/:id/imagenes', (req, res) => {

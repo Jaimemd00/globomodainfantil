@@ -104,5 +104,37 @@ const borrada = await llamar(`/api/admin/imagenes/${noPrincipal.id}`, { method: 
 comprobar('borra una imagen', !borrada.cuerpo.imagenes.some((i) => i.id === noPrincipal.id));
 comprobar('y reasigna la portada', borrada.cuerpo.imagenes.some((i) => i.principal === 1));
 
+/* ------------ Guardar el resto del formulario no debe pisar la portada ---- */
+
+/* Hubo un fallo real: el campo oculto de la portada en el formulario de
+   edición no se refrescaba al subir una foto nueva. Si después se guardaba
+   cualquier otro cambio (precio, tallas...) sin volver a abrir el modal, ese
+   valor viejo pisaba la portada real y la tienda volvía a enseñar el dibujo
+   de repuesto, aunque la ficha del artículo sí tuviera la foto correcta. */
+const nuevoArtPortada = await llamar('/api/admin/productos', {
+  method: 'POST',
+  body: JSON.stringify({ nombre: 'Prueba de portada', categoria_id: 'complementos', precio: 12 })
+}, admin);
+const idPortada = nuevoArtPortada.cuerpo.producto.id;
+comprobar('el artículo nace con la imagen genérica', nuevoArtPortada.cuerpo.producto.imagen === '/img/productos/generico.svg');
+
+const subidaPortada = await enviarArchivo(`/api/admin/productos/${idPortada}/imagenes`, { imagenes: { buffer: prenda, nombre: 'p.png' } }, admin);
+const rutaReal = subidaPortada.cuerpo.imagenes[0].ruta;
+comprobar('subir una foto fija la portada real', rutaReal !== '/img/productos/generico.svg');
+
+/* Se simula el fallo: el navegador manda el formulario con la portada
+   VIEJA (como si el campo oculto no se hubiera refrescado), guardando de
+   paso otro cambio cualquiera (el precio). */
+await llamar(`/api/admin/productos/${idPortada}`, {
+  method: 'PUT',
+  body: JSON.stringify({ precio: 15, imagen: '/img/productos/generico.svg' })
+}, admin);
+const trasGuardar = await llamar('/api/admin/productos', {}, admin);
+const prodPortada = trasGuardar.cuerpo.productos.find((p) => p.id === idPortada);
+comprobar('la portada real sobrevive aunque el formulario mande una vieja',
+  prodPortada?.imagen === rutaReal, `quedó: ${prodPortada?.imagen}`);
+
+await llamar(`/api/admin/productos/${idPortada}`, { method: 'DELETE' }, admin);
+
 console.log(`\n  ${ok} correctas · ${fallos} fallidas\n`);
 process.exit(fallos ? 1 : 0);

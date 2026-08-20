@@ -3,6 +3,7 @@
 const express = require('express');
 const { db, ESTADOS, ESTADOS_TEXTO } = require('../db');
 const { soloAdmin } = require('../middleware/auth');
+const { sincronizarPortada } = require('../imagen/portada');
 const { cargarPedido } = require('./pedidos');
 const { restaurarStock } = require('../pagos/rutas');
 
@@ -156,6 +157,15 @@ router.put('/productos/:id', (req, res) => {
     novedad: b.novedad != null ? (b.novedad ? 1 : 0) : actual.novedad,
     activo: b.activo != null ? (b.activo ? 1 : 0) : actual.activo
   });
+
+  /*
+   * Cinturón de seguridad: si el artículo ya tiene fotos reales en su
+   * galería, la portada la decide esa galería, no lo que traiga el
+   * formulario. Un valor de `imagen` desfasado en el navegador (por
+   * ejemplo, si se subió una foto nueva sin refrescar ese campo) ya no
+   * puede pisar la portada correcta.
+   */
+  sincronizarPortada(actual.id);
 
   if (Array.isArray(b.variantes)) {
     /*
