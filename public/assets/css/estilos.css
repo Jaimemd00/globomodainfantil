@@ -50,6 +50,11 @@
   --menta-medio: #8bdcc6;
   --menta-fuerte: #63cfb3;
 
+  /* Campañas de temporada (pastel, mismo criterio que el resto) */
+  --calabaza: #ffd7b0;        /* naranja calabaza pastel — Halloween */
+  --calabaza-fuerte: #e6945a; /* solo para subrayados y acentos */
+  --grafito: #403a44;         /* neutro oscuro — Black Friday (no es color saturado) */
+
   /* Neutros y apoyos */
   --vainilla: #f9e5ba;
   --vainilla-suave: #fcefd6;
@@ -152,6 +157,82 @@ p { margin: 0 0 1rem; }
   font-size: .84rem; letter-spacing: .03em; text-align: center; padding: .65rem 1rem;
 }
 .aviso-superior strong { color: var(--tinta); text-decoration: underline; text-decoration-color: var(--lila-fuerte); text-underline-offset: 3px; }
+.aviso-superior__emoji { font-size: 1rem; margin-right: .1rem; vertical-align: -1px; }
+.aviso-superior__enlace {
+  color: var(--tinta); font-weight: 700; margin-left: .5rem;
+  text-decoration: underline; text-decoration-thickness: 2px;
+  text-decoration-color: currentColor; text-underline-offset: 3px;
+  white-space: nowrap;
+}
+.aviso-superior__enlace:hover { opacity: .75; }
+
+/* --- Halloween: naranja calabaza pastel, texto carboncillo (regla de siempre) --- */
+.aviso-superior--halloween {
+  background: var(--calabaza);
+  border-bottom-color: var(--calabaza-fuerte);
+}
+.aviso-superior--halloween strong { text-decoration-color: var(--calabaza-fuerte); }
+
+/* --- Black Friday: banda en neutro grafito con letra crema. Es el único
+       fondo oscuro de la web y va en neutro, no en color saturado. Contraste
+       comprobado (crema sobre grafito ≈ 9:1, muy por encima de AA). --- */
+.aviso-superior--black-friday {
+  background: var(--grafito);
+  color: var(--vainilla-suave);
+  border-bottom-color: #2c282f;
+  letter-spacing: .08em;
+}
+.aviso-superior--black-friday strong { color: #fff; text-decoration-color: var(--vainilla); }
+.aviso-superior--black-friday .aviso-superior__enlace { color: var(--vainilla-suave); }
+
+/* =======================================================================
+   HERO DE CAMPAÑA — banda superior a todo el ancho con la ilustración de
+   temporada de fondo y el titular a la izquierda (donde el dibujo deja
+   hueco). La imagen y los textos salen de comun.js.
+   ======================================================================= */
+.promo-hero {
+  position: relative; overflow: hidden;
+  background-size: cover; background-position: center right; background-repeat: no-repeat;
+}
+.promo-hero::before { content: ''; position: absolute; inset: 0; z-index: 1; }
+.promo-hero .contenedor {
+  position: relative; z-index: 2;
+  min-height: clamp(260px, 32vw, 360px);
+  display: flex; align-items: center;
+}
+.promo-hero__texto { max-width: 42ch; }
+.promo-hero__cejilla {
+  text-transform: uppercase; letter-spacing: .14em; font-size: .78rem; font-weight: 700;
+  margin: 0 0 .55rem;
+}
+.promo-hero__titulo {
+  font-family: var(--display); font-weight: 700; line-height: 1.05;
+  font-size: clamp(1.8rem, 3.2vw, 2.9rem); margin: 0 0 .6rem;
+}
+.promo-hero__entrada { font-size: 1.02rem; margin: 0 0 1.3rem; max-width: 34ch; }
+
+/* Velo degradado por campaña: oscuro->transparente para que el titular se
+   lea siempre, se vea la imagen que se vea detrás. */
+.promo-hero--halloween { color: var(--tinta); }
+.promo-hero--halloween::before { background: linear-gradient(90deg, #ffe6cf 0%, rgba(255,230,207,.86) 34%, rgba(255,230,207,0) 66%); }
+.promo-hero--normal { color: var(--tinta); }
+.promo-hero--normal::before { background: linear-gradient(90deg, #fdf4f8 0%, rgba(253,244,248,.84) 34%, rgba(253,244,248,0) 66%); }
+.promo-hero--black-friday { color: #fff; }
+.promo-hero--black-friday::before { background: linear-gradient(90deg, #403a44 0%, rgba(64,58,68,.82) 36%, rgba(64,58,68,0) 70%); }
+.promo-hero--black-friday .promo-hero__cejilla { color: var(--vainilla); }
+.promo-hero--black-friday .btn--acento { background: var(--vainilla); color: var(--tinta); }
+
+@media (max-width: 680px) {
+  /* El dibujo (calabazas, fantasma, etiquetas) está en la zona centro-derecha
+     y baja de la ilustración: encuadramos ahí para que se vea en móvil, con el
+     texto arriba y un velo de arriba abajo que lo mantiene legible. */
+  .promo-hero { background-position: 78% bottom; }
+  .promo-hero .contenedor { min-height: 400px; align-items: flex-start; padding-top: 1.7rem; padding-bottom: 1.6rem; }
+  .promo-hero__texto { max-width: none; }
+  .promo-hero--halloween::before { background: linear-gradient(180deg, #ffe6cf 0%, rgba(255,230,207,.88) 30%, rgba(255,230,207,0) 72%); }
+  .promo-hero--normal::before { background: linear-gradient(180deg, #fdf4f8 0%, rgba(253,244,248,.9) 30%, rgba(253,244,248,0) 72%); }
+  .promo-hero--black-friday::before { background: linear-gradient(180deg, #403a44 0%, rgba(64,58,68,.88) 32%, rgba(64,58,68,0) 74%); }
+}
 
 .cabecera {
   position: sticky; top: 0; z-index: 60;
@@ -506,6 +587,44 @@ textarea { min-height: 96px; resize: vertical; }
 .panel--rosa { background: var(--rosa-suave); border-color: var(--rosa); }
 .panel--menta { background: var(--menta-claro); border-color: var(--menta); }
 .resumen-fila { display: flex; justify-content: space-between; padding: .5rem 0; font-size: 1rem; }
+.resumen-fila--descuento { color: var(--menta-fuerte); font-weight: 700; }
+.resumen-fila--descuento span:last-child { white-space: nowrap; }
+
+/* Bloque del cupón en el resumen del pedido */
+.cupon { margin: 1rem 0 .4rem; padding: .9rem 0 1rem; border-top: 1px dashed var(--linea-fuerte); }
+.cupon__etq { display: block; font-size: .9rem; font-weight: 600; margin-bottom: .5rem; }
+.cupon__fila { display: flex; gap: .5rem; }
+.cupon__fila input {
+  flex: 1; min-width: 0; text-transform: uppercase; letter-spacing: .05em;
+}
+.cupon .btn--peq { white-space: nowrap; }
+.cupon__aviso { margin: .55rem 0 0; font-size: .86rem; min-height: 1.1em; }
+.cupon__aviso--ok { color: var(--menta-fuerte); font-weight: 600; }
+.cupon__aviso--error { color: var(--rosa-fuerte); font-weight: 600; }
+
+/* Tarjeta de bienvenida al club (tras registrarse) */
+.bienvenida-club {
+  display: flex; flex-wrap: wrap; gap: 1rem 1.5rem; align-items: center; justify-content: space-between;
+  background: linear-gradient(120deg, var(--menta-suave), var(--rosa-suave));
+  border: 1px solid var(--menta-medio); border-radius: var(--radio-g);
+  padding: 1.1rem 1.4rem; margin-bottom: 1.5rem;
+}
+.bienvenida-club__texto p { margin: .25rem 0 0; font-size: .95rem; }
+.bienvenida-club__codigo { display: flex; align-items: center; gap: .9rem; }
+.bienvenida-club__valor {
+  font-family: var(--display); font-weight: 700; letter-spacing: .08em;
+  background: var(--blanco); color: var(--tinta);
+  border: 2px dashed var(--rosa-fuerte); border-radius: var(--radio);
+  padding: .45rem .9rem; font-size: 1.05rem;
+}
+
+/* Reclamo del club en el formulario de registro */
+.reclamo-club {
+  background: var(--menta-suave); border: 1px solid var(--menta-medio);
+  border-radius: var(--radio); padding: .7rem 1rem; margin: 0 0 1.2rem;
+  font-size: .95rem; color: var(--tinta);
+}
+
 .resumen-fila--total {
   border-top: 2px solid var(--rosa-fuerte); margin-top: .8rem; padding-top: 1rem;
   font-family: var(--display); font-weight: 700; font-size: 1.35rem;
@@ -1041,6 +1160,10 @@ table.datos tbody tr:hover { background: var(--rosa-suave); }
   }
   .cabecera { background: rgba(255, 255, 255, .95) !important; }
   .aviso-superior { background: var(--lila-suave) !important; color: var(--tinta) !important; }
+  .aviso-superior--halloween { background: var(--calabaza) !important; color: var(--tinta) !important; }
+  .aviso-superior--black-friday { background: var(--grafito) !important; color: var(--vainilla-suave) !important; }
+  .aviso-superior--black-friday strong { color: #fff !important; }
+  .aviso-superior--black-friday .aviso-superior__enlace { color: var(--vainilla-suave) !important; }
   .hero { background: linear-gradient(160deg, var(--rosa-suave) 0%, var(--lila-suave) 55%, var(--menta-suave) 100%) !important; }
   .panel, .metrica, .filtros, .garantia, .modal__caja, .tabla-envoltorio, .familia-ancha,
   .ficha__medio, .collage__pieza, .aviso-flotante, .soltar, .modelo-tarjeta,

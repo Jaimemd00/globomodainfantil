@@ -9,6 +9,7 @@ const { db, MOTOR } = require('./db');
 const authRutas = require('./routes/auth');
 const productosRutas = require('./routes/productos');
 const pedidosRutas = require('./routes/pedidos');
+const cuponesRutas = require('./routes/cupones');
 const adminRutas = require('./routes/admin');
 const adminMediaRutas = require('./routes/admin-media');
 const pagosRutas = require('./pagos/rutas');
@@ -39,6 +40,7 @@ app.use((_req, res, next) => {
 app.use('/api/auth', authRutas);
 app.use('/api', productosRutas);
 app.use('/api', pedidosRutas);
+app.use('/api', cuponesRutas);
 app.use('/api/pagos', pagosRutas);
 app.use('/api/admin', adminMediaRutas);
 app.use('/api/admin', adminRutas);

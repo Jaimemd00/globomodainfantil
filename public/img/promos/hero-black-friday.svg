@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 480" width="1600" height="480" role="img" aria-label="Ilustración de Black Friday con etiquetas de rebajas colgando">
+  <defs>
+    <linearGradient id="bf-fondo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#4a444f"/>
+      <stop offset="0.6" stop-color="#403a44"/>
+      <stop offset="1" stop-color="#312c36"/>
+    </linearGradient>
+    <linearGradient id="bf-oro" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f9e5ba"/>
+      <stop offset="1" stop-color="#e3c98f"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1600" height="480" fill="url(#bf-fondo)"/>
+
+  <!-- destellos / confeti sutil -->
+  <g fill="#f9e5ba" opacity="0.55">
+    <circle cx="980" cy="70" r="2.5"/><circle cx="1120" cy="120" r="2"/>
+    <circle cx="1380" cy="90" r="2.5"/><circle cx="1500" cy="150" r="2"/>
+    <circle cx="900" cy="150" r="2"/><circle cx="1260" cy="60" r="2"/>
+  </g>
+  <g fill="none" stroke="#f9e5ba" stroke-width="2" opacity="0.4">
+    <path d="M1050 60 l0 16 M1042 68 l16 0"/>
+    <path d="M1440 200 l0 16 M1432 208 l16 0"/>
+    <path d="M1180 210 l0 14 M1173 217 l14 0"/>
+  </g>
+
+  <!-- barra superior de donde cuelgan las etiquetas -->
+  <rect x="820" y="86" width="700" height="5" rx="2.5" fill="#bba0c1" opacity="0.5"/>
+
+  <!-- etiquetas colgando -->
+  <g font-family="'Quicksand','Trebuchet MS',sans-serif" font-weight="700" text-anchor="middle">
+    <!-- etiqueta 1 (oro, -50%) -->
+    <g transform="translate(960 86) rotate(-8)">
+      <line x1="0" y1="0" x2="0" y2="40" stroke="#d8c7e2" stroke-width="3"/>
+      <path d="M-46 40 h82 a10 10 0 0 1 10 10 v96 a10 10 0 0 1 -10 10 h-82 a10 10 0 0 1 -10 -10 v-96 a10 10 0 0 1 10 -10z" fill="url(#bf-oro)"/>
+      <circle cx="-30" cy="56" r="7" fill="#403a44"/>
+      <text x="0" y="104" font-size="30" fill="#403a44">-50%</text>
+    </g>
+    <!-- etiqueta 2 (rosa pastel, SALE) -->
+    <g transform="translate(1130 86) rotate(6)">
+      <line x1="0" y1="0" x2="0" y2="56" stroke="#d8c7e2" stroke-width="3"/>
+      <path d="M-50 56 h90 a10 10 0 0 1 10 10 v70 a10 10 0 0 1 -10 10 h-90 a10 10 0 0 1 -10 -10 v-70 a10 10 0 0 1 10 -10z" fill="#f8c4d8"/>
+      <circle cx="-34" cy="72" r="7" fill="#403a44"/>
+      <text x="0" y="116" font-size="26" fill="#443e48">SALE</text>
+    </g>
+    <!-- etiqueta 3 (menta pastel, -30%) -->
+    <g transform="translate(1300 86) rotate(-5)">
+      <line x1="0" y1="0" x2="0" y2="44" stroke="#d8c7e2" stroke-width="3"/>
+      <path d="M-46 44 h82 a10 10 0 0 1 10 10 v92 a10 10 0 0 1 -10 10 h-82 a10 10 0 0 1 -10 -10 v-92 a10 10 0 0 1 10 -10z" fill="#b0e7d7"/>
+      <circle cx="-30" cy="60" r="7" fill="#403a44"/>
+      <text x="0" y="108" font-size="28" fill="#443e48">-30%</text>
+    </g>
+    <!-- etiqueta 4 (lila pastel, -20%) -->
+    <g transform="translate(1455 86) rotate(9)">
+      <line x1="0" y1="0" x2="0" y2="62" stroke="#d8c7e2" stroke-width="3"/>
+      <path d="M-44 62 h78 a10 10 0 0 1 10 10 v74 a10 10 0 0 1 -10 10 h-78 a10 10 0 0 1 -10 -10 v-74 a10 10 0 0 1 10 -10z" fill="#d6c5e8"/>
+      <circle cx="-28" cy="78" r="7" fill="#403a44"/>
+      <text x="0" y="124" font-size="26" fill="#443e48">-20%</text>
+    </g>
+  </g>
+
+  <!-- tres globos del logo, en versión apagada elegante abajo -->
+  <g transform="translate(1160 400)" opacity="0.9">
+    <ellipse cx="0" cy="0" rx="26" ry="32" fill="#f8c4d8"/>
+    <ellipse cx="42" cy="-10" rx="24" ry="30" fill="#d6c5e8"/>
+    <ellipse cx="80" cy="4" rx="22" ry="28" fill="#b0e7d7"/>
+    <path d="M0 30 q4 20 -2 44 M42 18 q4 22 -2 46 M80 30 q4 18 -2 40" fill="none" stroke="#bba0c1" stroke-width="2" opacity="0.6"/>
+  </g>
+</svg>

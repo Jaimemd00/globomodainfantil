@@ -334,5 +334,52 @@ const loginTrasIntento = await llamar('/api/auth/login', {
 });
 comprobar('la cuenta de administración sigue intacta', loginTrasIntento.estado === 200);
 
+/* ---------------------------- Cupón del club ----------------------------- */
+/* Dos artículos: uno a precio normal (20 €) y uno ya rebajado (15, antes 30).
+   El cupón de bienvenida (10 %) solo debe contar el de precio normal. */
+const artNormal = await llamar('/api/admin/productos', {
+  method: 'POST', headers: admin,
+  body: JSON.stringify({ nombre: `Cupón normal ${azar}`, categoria_id: 'complementos', precio: 20, variantes: [{ talla: 'Única', stock: 5 }] })
+});
+const artRebajado = await llamar('/api/admin/productos', {
+  method: 'POST', headers: admin,
+  body: JSON.stringify({ nombre: `Cupón rebajado ${azar}`, categoria_id: 'complementos', precio: 15, precio_antes: 30, variantes: [{ talla: 'Única', stock: 5 }] })
+});
+const idN = artNormal.cuerpo.producto?.id;
+const idR = artRebajado.cuerpo.producto?.id;
+comprobar('cupón: artículos de prueba creados', !!idN && !!idR);
+
+const itemsCupon = [
+  { producto_id: idN, talla: 'Única', cantidad: 1 },
+  { producto_id: idR, talla: 'Única', cantidad: 1 }
+];
+
+const valida = await llamar('/api/cupones/validar', {
+  method: 'POST', body: JSON.stringify({ codigo: 'BIENVENIDA10', email: `cup${azar}@test.es`, items: itemsCupon })
+});
+comprobar('cupón: 10 % solo sobre precio normal (2 € de 20, no de 35)', valida.cuerpo.valido === true && valida.cuerpo.descuento === 2,
+  JSON.stringify(valida.cuerpo));
+
+const codigoMalo = await llamar('/api/cupones/validar', {
+  method: 'POST', body: JSON.stringify({ codigo: 'NOEXISTE', items: itemsCupon })
+});
+comprobar('cupón: un código inexistente no da descuento', codigoMalo.cuerpo.valido === false && codigoMalo.cuerpo.descuento === 0);
+
+const emailCupon = `usa${azar}@test.es`;
+const pedidoCupon = await llamar('/api/pedidos', {
+  method: 'POST',
+  body: JSON.stringify({ metodo_envio: 'recogida', nombre: 'Cupón', email: emailCupon, telefono: '600000000', metodo_pago: 'transferencia', cupon: 'BIENVENIDA10', items: itemsCupon })
+});
+const pc = pedidoCupon.cuerpo.pedido;
+comprobar('cupón: el pedido guarda el descuento y el total cuadra',
+  pedidoCupon.estado === 201 && pc?.descuento === 2 && pc?.total === Math.round((pc.subtotal - pc.descuento + pc.envio) * 100) / 100,
+  JSON.stringify({ subtotal: pc?.subtotal, descuento: pc?.descuento, total: pc?.total }));
+
+const reUso = await llamar('/api/pedidos', {
+  method: 'POST',
+  body: JSON.stringify({ metodo_envio: 'recogida', nombre: 'Cupón', email: emailCupon, telefono: '600000000', metodo_pago: 'transferencia', cupon: 'BIENVENIDA10', items: itemsCupon })
+});
+comprobar('cupón: de un solo uso por cliente (reintento rechazado con aviso)', reUso.estado === 400 && /usado/i.test(reUso.cuerpo.error || ''), JSON.stringify(reUso.cuerpo));
+
 console.log(`\n  ${ok} correctas · ${fallos} fallidas\n`);
 process.exit(fallos ? 1 : 0);

@@ -2,6 +2,11 @@
 
 let reglasEnvio = { estandar: 4.95, gratis_desde: 49 };
 
+/* Cupón aplicado: lo calcula el servidor y aquí solo se muestra. */
+let cuponAplicado = null;
+let descuentoActual = 0;
+let etiquetaDescuento = 'Descuento';
+
 const esRecogida = () => document.querySelector('input[name=metodo_envio]:checked')?.value === 'recogida';
 
 function pintarResumen() {
@@ -34,9 +39,21 @@ function actualizarTotales() {
   const gratisPorImporte = subtotal >= reglasEnvio.gratis_desde;
   const envio = esRecogida() || gratisPorImporte ? 0 : reglasEnvio.estandar;
 
+  /* El descuento nunca puede dejar el total por debajo del envío. */
+  const descuento = Math.min(descuentoActual, subtotal);
+
+  const filaDesc = document.getElementById('fila-descuento');
+  if (descuento > 0) {
+    document.getElementById('descuento-etq').textContent = `Descuento (${cuponAplicado})`;
+    document.getElementById('descuento').textContent = `− ${eur(descuento)}`;
+    filaDesc.hidden = false;
+  } else {
+    filaDesc.hidden = true;
+  }
+
   document.getElementById('subtotal').textContent = eur(subtotal);
   document.getElementById('envio').textContent = envio === 0 ? 'Gratis' : eur(envio);
-  document.getElementById('total').textContent = eur(subtotal + envio);
+  document.getElementById('total').textContent = eur(subtotal - descuento + envio);
 
   const etiqueta = document.getElementById('precio-domicilio');
   if (etiqueta) {
@@ -48,6 +65,51 @@ function actualizarTotales() {
   const recogida = esRecogida();
   document.getElementById('bloque-direccion').hidden = recogida;
   document.getElementById('aviso-recogida').hidden = !recogida;
+}
+
+/* Pregunta al servidor cuánto descuenta el código sobre la cesta actual.
+   El importe lo decide el servidor (mira qué prendas están a precio normal);
+   aquí solo se enseña. */
+async function validarCupon({ silencioso = false } = {}) {
+  const entrada = document.getElementById('cupon');
+  const aviso = document.getElementById('cupon-aviso');
+  const codigo = entrada.value.trim().toUpperCase();
+
+  if (!codigo) {
+    cuponAplicado = null;
+    descuentoActual = 0;
+    aviso.textContent = '';
+    aviso.className = 'cupon__aviso';
+    actualizarTotales();
+    return;
+  }
+
+  const items = Carrito.leer().map((i) => ({ producto_id: i.producto_id, talla: i.talla, cantidad: i.cantidad }));
+  const email = document.getElementById('email')?.value.trim() || '';
+
+  try {
+    const r = await API.post('/cupones/validar', { codigo, email, items });
+    if (r.valido && r.descuento > 0) {
+      cuponAplicado = r.cupon;
+      descuentoActual = r.descuento;
+      etiquetaDescuento = r.etiqueta || 'Descuento';
+      aviso.textContent = `✓ Código aplicado: −${eur(r.descuento)}. ${r.etiqueta || ''}`.trim();
+      aviso.className = 'cupon__aviso cupon__aviso--ok';
+    } else {
+      cuponAplicado = null;
+      descuentoActual = 0;
+      aviso.textContent = r.motivo || 'Ese código no se puede aplicar.';
+      aviso.className = 'cupon__aviso cupon__aviso--error';
+    }
+  } catch (e) {
+    cuponAplicado = null;
+    descuentoActual = 0;
+    if (!silencioso) {
+      aviso.textContent = 'No hemos podido comprobar el código. Inténtalo de nuevo.';
+      aviso.className = 'cupon__aviso cupon__aviso--error';
+    }
+  }
+  actualizarTotales();
 }
 
 function rellenarConSesion() {
@@ -95,6 +157,7 @@ document.getElementById('formulario-pedido').addEventListener('submit', async (e
     pais: valor('pais'),
     notas: valor('notas'),
     metodo_pago: document.querySelector('input[name=metodo_pago]:checked').value,
+    cupon: cuponAplicado || '',
     items: Carrito.leer().map((i) => ({ producto_id: i.producto_id, talla: i.talla, cantidad: i.cantidad }))
   };
 
@@ -151,5 +214,20 @@ document.getElementById('formulario-pedido').addEventListener('submit', async (e
   document.querySelectorAll('input[name=metodo_envio]').forEach((r) =>
     r.addEventListener('change', actualizarTotales)
   );
+
+  /* Cupón: botón "Aplicar", tecla Enter y prellenado por URL (?cupon=...),
+     que es como llega desde el correo de bienvenida o tras registrarse. */
+  const entradaCupon = document.getElementById('cupon');
+  document.getElementById('aplicar-cupon')?.addEventListener('click', () => validarCupon());
+  entradaCupon?.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { e.preventDefault(); validarCupon(); }
+  });
+
+  const cuponURL = new URLSearchParams(location.search).get('cupon');
+  if (cuponURL && entradaCupon) {
+    entradaCupon.value = cuponURL.toUpperCase();
+    validarCupon({ silencioso: true });
+  }
+
   actualizarTotales();
 })();

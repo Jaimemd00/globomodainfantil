@@ -79,6 +79,30 @@ async function crearSesionStripe({ pedido, lineas, base }) {
     cuerpo.set(`line_items[${i}][price_data][product_data][name]`, 'Gastos de envío');
   }
 
+  /* Descuento (cupón). Stripe no admite líneas en negativo, así que se crea
+     un cupón de un solo uso por el importe exacto y se adjunta a la sesión.
+     Así lo que cobra la pasarela sigue cuadrando al céntimo con pedido.total. */
+  if (Number(pedido.descuento) > 0) {
+    const cuerpoCupon = new URLSearchParams();
+    cuerpoCupon.set('amount_off', String(centimos(pedido.descuento)));
+    cuerpoCupon.set('currency', 'eur');
+    cuerpoCupon.set('duration', 'once');
+    cuerpoCupon.set('name', pedido.cupon ? `Descuento ${pedido.cupon}` : 'Descuento');
+
+    const rc = await fetch('https://api.stripe.com/v1/coupons', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${CLAVE}`,
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Idempotency-Key': `cupon_${pedido.codigo}`
+      },
+      body: cuerpoCupon
+    });
+    const datosCupon = await rc.json();
+    if (!rc.ok) throw new Error(datosCupon.error?.message || 'No se pudo aplicar el descuento en la pasarela.');
+    cuerpo.set('discounts[0][coupon]', datosCupon.id);
+  }
+
   const respuesta = await fetch('https://api.stripe.com/v1/checkout/sessions', {
     method: 'POST',
     headers: {

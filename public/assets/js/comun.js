@@ -205,6 +205,83 @@ const ENLACES = [
   ['/tienda?rebaja=1', 'Rebajas']
 ];
 
+/* =======================================================================
+   CAMPAÑAS — la cinta superior cambia sola según la fecha.
+
+   Cada campaña tiene una ventana [desde, hasta] en formato 'MM-DD'. Si el
+   día de hoy cae dentro, se muestra su cinta; si no, la de por defecto.
+   Para activar, apagar o reprogramar una promo basta con tocar las fechas
+   o el texto AQUÍ: no hay que tocar nada más de la web. Gana la primera
+   campaña de la lista que encaje con la fecha.
+   ======================================================================= */
+const CAMPANAS = [
+  {
+    id: 'halloween',
+    desde: '10-24', hasta: '10-31',
+    html: `<span class="aviso-superior__emoji" aria-hidden="true">🎃</span>
+           <strong>Rebajas de Halloween</strong> — prendas de temporada a precio de susto, solo hasta el 31 de octubre.
+           <a class="aviso-superior__enlace" href="/tienda?rebaja=1">Ver las rebajas</a>`,
+    hero: {
+      imagen: '/img/promos/hero-halloween.svg',
+      cejilla: 'Solo hasta el 31 de octubre',
+      titulo: 'Rebajas de Halloween',
+      texto: 'Prendas de temporada a precio de susto. Date prisa, que vuelan.',
+      cta: 'Ver las rebajas',
+      href: '/tienda?rebaja=1'
+    }
+  },
+  {
+    id: 'black-friday',
+    desde: '11-21', hasta: '12-01',
+    html: `<span class="aviso-superior__emoji" aria-hidden="true">🖤</span>
+           <strong>BLACK FRIDAY</strong> en Globo — descuentos en una selección para toda la familia.
+           <a class="aviso-superior__enlace" href="/tienda?rebaja=1">Ver las ofertas</a>`,
+    hero: {
+      imagen: '/img/promos/hero-black-friday.svg',
+      cejilla: 'Del 21 de noviembre al 1 de diciembre',
+      titulo: 'Black Friday en Globo',
+      texto: 'Descuentos en una selección para toda la familia. Mientras dure el stock.',
+      cta: 'Ver las ofertas',
+      href: '/tienda?rebaja=1'
+    }
+  }
+];
+
+/* Cinta de siempre: lo que se ve cuando no hay ninguna campaña activa. */
+const AVISO_DEFECTO =
+  `Envío gratis desde <strong>49 €</strong> · Recoge <strong>gratis</strong> en nuestra tienda de Écija`;
+
+/* Hero de siempre (sin campaña). */
+const HERO_DEFECTO = {
+  id: 'normal',
+  imagen: '/img/promos/hero-normal.svg',
+  cejilla: 'De 0 a 14 años · Écija',
+  titulo: 'La ropa de tus peques, a un clic',
+  texto: 'Envío gratis desde 49 € o recoge sin coste en nuestra tienda de Écija.',
+  cta: 'Ver toda la ropa',
+  href: '/tienda'
+};
+
+/* Devuelve el hero de la campaña activa, o el de siempre. */
+function heroActivo() {
+  const c = campanaActiva();
+  return c && c.hero ? { id: c.id, ...c.hero } : HERO_DEFECTO;
+}
+
+function campanaActiva(hoy = new Date()) {
+  const mmdd = `${String(hoy.getMonth() + 1).padStart(2, '0')}-${String(hoy.getDate()).padStart(2, '0')}`;
+  for (const c of CAMPANAS) {
+    if (c.desde <= c.hasta) {
+      // Ventana dentro del mismo año (p. ej. 10-24 … 10-31).
+      if (mmdd >= c.desde && mmdd <= c.hasta) return c;
+    } else if (mmdd >= c.desde || mmdd <= c.hasta) {
+      // Ventana que cruza fin de año (p. ej. 12-26 … 01-06).
+      return c;
+    }
+  }
+  return null;
+}
+
 function pintarCabecera() {
   const host = document.getElementById('cabecera');
   if (!host) return;
@@ -212,9 +289,13 @@ function pintarCabecera() {
   const u = Sesion.usuario;
   const actual = location.pathname + location.search;
 
+  const campana = campanaActiva();
+  const avisoHtml = campana ? campana.html : AVISO_DEFECTO;
+  const avisoClase = campana ? ` aviso-superior--${campana.id}` : '';
+
   host.innerHTML = `
-    <div class="aviso-superior">
-      Envío gratis desde <strong>49 €</strong> · Recoge <strong>gratis</strong> en nuestra tienda de Écija
+    <div class="aviso-superior${avisoClase}">
+      ${avisoHtml}
     </div>
     <div class="cabecera">
       <div class="contenedor cabecera__fila">

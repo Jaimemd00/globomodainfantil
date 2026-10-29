@@ -176,6 +176,26 @@ async function cargarCarrusel(hostId, id, consulta, vacio) {
   }
 }
 
+/* Hero de campaña (Halloween / Black Friday / normal). La imagen y los textos
+   vienen de comun.js, así que para cambiar una promo solo se toca aquel sitio. */
+function pintarPromoHero() {
+  const host = document.getElementById('promo-hero');
+  if (!host || typeof heroActivo !== 'function') return;
+  const h = heroActivo();
+  host.classList.add(`promo-hero--${h.id}`);
+  host.style.backgroundImage = `url('${h.imagen}')`;
+  host.innerHTML = `
+    <div class="contenedor">
+      <div class="promo-hero__texto">
+        ${h.cejilla ? `<p class="promo-hero__cejilla">${esc(h.cejilla)}</p>` : ''}
+        <h2 class="promo-hero__titulo">${esc(h.titulo)}</h2>
+        <p class="promo-hero__entrada">${esc(h.texto)}</p>
+        <a class="btn btn--acento" href="${esc(h.href)}">${esc(h.cta)}</a>
+      </div>
+    </div>`;
+}
+
+pintarPromoHero();
 pintarGarantias();
 pintarEscaparate();
 pintarFamilias();

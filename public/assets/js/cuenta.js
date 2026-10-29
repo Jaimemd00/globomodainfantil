@@ -52,7 +52,17 @@ document.getElementById('panel-registro').addEventListener('submit', async (e) =
       cp: document.getElementById('r-cp').value.trim()
     });
     Sesion.guardar(datos);
-    irDespuesDeEntrar();
+
+    /* Regalo de bienvenida: 10 % en la primera compra con el código del club.
+       Si venía a comprar (volver=/checkout), se le lleva de vuelta con el
+       código ya puesto; si no, se le enseña en el portal nada más entrar. */
+    if (volverA) {
+      const sep = volverA.includes('?') ? '&' : '?';
+      location.href = `${volverA}${sep}cupon=BIENVENIDA10`;
+    } else {
+      try { sessionStorage.setItem('globo_bienvenida', 'BIENVENIDA10'); } catch (_) {}
+      location.reload();
+    }
   } catch (err) {
     alerta('mensaje-acceso', err.message);
   }
@@ -171,6 +181,31 @@ function activarFormulariosPortal() {
   document.getElementById('salir').addEventListener('click', () => Sesion.cerrar());
 }
 
+/* Nada más registrarse, una tarjeta con el código de bienvenida. Se enseña
+   una sola vez (se borra la marca al mostrarla). */
+function mostrarBienvenida() {
+  let codigo;
+  try {
+    codigo = sessionStorage.getItem('globo_bienvenida');
+    if (codigo) sessionStorage.removeItem('globo_bienvenida');
+  } catch (_) { codigo = null; }
+  if (!codigo) return;
+
+  const portal = document.getElementById('portal');
+  const tarjeta = document.createElement('div');
+  tarjeta.className = 'bienvenida-club';
+  tarjeta.innerHTML = `
+    <div class="bienvenida-club__texto">
+      <strong>¡Bienvenida al club de Globo!</strong>
+      <p>Tienes un <strong>10 % de descuento</strong> en tu primera compra. Usa este código al pagar:</p>
+    </div>
+    <div class="bienvenida-club__codigo">
+      <span class="bienvenida-club__valor">${esc(codigo)}</span>
+      <a class="btn btn--acento btn--peq" href="/tienda">Empezar a comprar</a>
+    </div>`;
+  portal.insertBefore(tarjeta, portal.firstChild);
+}
+
 /* --------------------------------- Arranque -------------------------------- */
 
 (async function iniciar() {
@@ -194,6 +229,7 @@ function activarFormulariosPortal() {
     activarFormulariosPortal();
     rellenarDatos(usuario);
     cargarPedidos();
+    mostrarBienvenida();
   } catch (_) {
     Sesion.cerrar(false);
     document.getElementById('acceso').hidden = false;

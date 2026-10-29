@@ -204,7 +204,37 @@ CREATE TABLE IF NOT EXISTS pagos_procesados (
   creado_en TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
+/* ---- Cupones de descuento ----
+   Un cupón es un código (p. ej. BIENVENIDA10) que aplica un % de descuento.
+   solo_precio_normal = 1 significa que el descuento NO cuenta las prendas
+   que ya están rebajadas (las que tienen precio_antes). usos_por_cliente
+   limita cuántas veces puede usarlo un mismo correo (1 = cupón de bienvenida).
+   caduca_en en NULL = no caduca. activo = 0 lo apaga sin borrarlo. */
+CREATE TABLE IF NOT EXISTS cupones (
+  codigo             TEXT PRIMARY KEY,
+  descripcion        TEXT,
+  tipo               TEXT NOT NULL DEFAULT 'porcentaje',
+  valor              REAL NOT NULL,
+  solo_precio_normal INTEGER NOT NULL DEFAULT 1,
+  usos_por_cliente   INTEGER NOT NULL DEFAULT 1,
+  minimo             REAL NOT NULL DEFAULT 0,
+  activo             INTEGER NOT NULL DEFAULT 1,
+  caduca_en          TEXT,
+  creado_en          TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+/* Cada uso de un cupón queda registrado para poder limitarlo por cliente. */
+CREATE TABLE IF NOT EXISTS cupones_usados (
+  id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  codigo     TEXT NOT NULL REFERENCES cupones(codigo) ON DELETE CASCADE,
+  email      TEXT NOT NULL,
+  usuario_id INTEGER REFERENCES usuarios(id) ON DELETE SET NULL,
+  pedido_id  INTEGER REFERENCES pedidos(id) ON DELETE CASCADE,
+  usado_en   TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
 CREATE INDEX IF NOT EXISTS idx_productos_categoria ON productos(categoria_id);
+CREATE INDEX IF NOT EXISTS idx_cupones_usados ON cupones_usados(codigo, email);
 CREATE INDEX IF NOT EXISTS idx_pedidos_pago ON pedidos(pago_ref);
 CREATE INDEX IF NOT EXISTS idx_imagenes_producto ON producto_imagenes(producto_id);
 CREATE INDEX IF NOT EXISTS idx_pedidos_usuario ON pedidos(usuario_id);
@@ -229,6 +259,16 @@ asegurarColumna('pedidos', 'pago_ref', 'TEXT');
 asegurarColumna('pedidos', 'pagado_en', 'TEXT');
 asegurarColumna('categorias', 'edad', 'TEXT');
 asegurarColumna('pedidos', 'metodo_envio', "TEXT NOT NULL DEFAULT 'domicilio'");
+asegurarColumna('pedidos', 'descuento', 'REAL NOT NULL DEFAULT 0');
+asegurarColumna('pedidos', 'cupon', 'TEXT');
+
+/* Cupón de bienvenida del club: 10 % en la primera compra, un uso por cliente
+   y solo sobre prendas a precio normal. INSERT OR IGNORE = si ya existe (o si
+   la clienta lo edita a mano más adelante), esto no lo pisa. */
+db.prepare(
+  `INSERT OR IGNORE INTO cupones (codigo, descripcion, tipo, valor, solo_precio_normal, usos_por_cliente, minimo, activo)
+   VALUES ('BIENVENIDA10', 'Bienvenida al club: 10 % en tu primera compra', 'porcentaje', 10, 1, 1, 0, 1)`
+).run();
 
 /** Estados del ciclo de vida de un pedido, en orden. */
 const ESTADOS = ['pendiente', 'pagado', 'preparando', 'enviado', 'entregado', 'cancelado'];

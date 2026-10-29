@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const express = require('express');
 const { db, ESTADOS_TEXTO } = require('../db');
 const { opcional, requerido } = require('../middleware/auth');
+const { buscarCuponUsable, importeDescuento, estaRebajada } = require('./cupones');
 
 const router = express.Router();
 
@@ -78,9 +79,17 @@ router.post('/pedidos', opcional, (req, res) => {
   const email = String(c.email || req.usuario?.email || '').trim().toLowerCase();
   if (!EMAIL_RE.test(email)) return res.status(400).json({ error: 'Necesitamos un correo válido para enviarte el seguimiento.' });
 
+  /* Cupón (opcional). Se resuelve antes de recorrer la cesta para saber si
+     cuenta o no las prendas ya rebajadas. Si el cliente manda un código que
+     no sirve (caducado, ya usado…), se corta el pedido con el motivo, para
+     que no crea que le hemos aplicado un descuento que no existe. */
+  const codigoCupon = String(c.cupon || '').trim().toUpperCase();
+  let cupon = null;
+
   const crear = db.transaction(() => {
     const lineas = [];
     let subtotal = 0;
+    let baseElegible = 0; // importe sobre el que puede aplicarse el cupón
 
     for (const item of items) {
       const cantidad = Math.max(1, Math.min(20, parseInt(item.cantidad, 10) || 1));
@@ -99,6 +108,9 @@ router.post('/pedidos', opcional, (req, res) => {
 
       db.prepare('UPDATE variantes SET stock = stock - ? WHERE id = ?').run(cantidad, variante.id);
       subtotal += producto.precio * cantidad;
+      if (cupon && (!cupon.solo_precio_normal || !estaRebajada(producto))) {
+        baseElegible += producto.precio * cantidad;
+      }
       lineas.push({
         producto_id: producto.id,
         nombre: producto.nombre,
@@ -111,8 +123,17 @@ router.post('/pedidos', opcional, (req, res) => {
     }
 
     subtotal = euros(subtotal);
+
+    /* El descuento solo cuenta si de verdad rebaja algo; si el cupón no
+       aplica a esta cesta (p. ej. todo está ya rebajado), se guarda 0 y no
+       se marca como usado, para que el cliente pueda aprovecharlo otro día. */
+    const descuento = cupon ? importeDescuento(cupon, euros(baseElegible)) : 0;
+    const cuponAplicado = descuento > 0 ? cupon.codigo : null;
+
+    /* El envío gratis se mide por el subtotal (antes del descuento): así el
+       cupón no sube de golpe los gastos de envío por bajar de los 49 €. */
     const envio = recogida || subtotal >= ENVIO_GRATIS_DESDE ? 0 : ENVIO_ESTANDAR;
-    const total = euros(subtotal + envio);
+    const total = euros(subtotal - descuento + envio);
 
     let codigo = generarCodigo();
     while (db.prepare('SELECT 1 FROM pedidos WHERE codigo = ?').get(codigo)) codigo = generarCodigo();
@@ -120,9 +141,9 @@ router.post('/pedidos', opcional, (req, res) => {
     const info = db
       .prepare(
         `INSERT INTO pedidos (codigo, usuario_id, email, nombre, telefono, direccion, ciudad, cp, provincia, pais,
-                              notas, metodo_pago, metodo_envio, subtotal, envio, total, estado)
+                              notas, metodo_pago, metodo_envio, subtotal, descuento, cupon, envio, total, estado)
          VALUES (@codigo, @usuario_id, @email, @nombre, @telefono, @direccion, @ciudad, @cp, @provincia, @pais,
-                 @notas, @metodo_pago, @metodo_envio, @subtotal, @envio, @total, 'pendiente')`
+                 @notas, @metodo_pago, @metodo_envio, @subtotal, @descuento, @cupon, @envio, @total, 'pendiente')`
       )
       .run({
         codigo,
@@ -139,11 +160,21 @@ router.post('/pedidos', opcional, (req, res) => {
         metodo_pago: ['tarjeta', 'transferencia', 'contrareembolso'].includes(c.metodo_pago) ? c.metodo_pago : 'tarjeta',
         metodo_envio: recogida ? 'recogida' : 'domicilio',
         subtotal,
+        descuento,
+        cupon: cuponAplicado,
         envio,
         total
       });
 
     const pedidoId = info.lastInsertRowid;
+
+    /* Si el cupón se aplicó, se registra el uso para que no pueda repetirse
+       (el de bienvenida es de un solo uso por cliente). */
+    if (cuponAplicado) {
+      db.prepare(
+        'INSERT INTO cupones_usados (codigo, email, usuario_id, pedido_id) VALUES (?, ?, ?, ?)'
+      ).run(cuponAplicado, email, req.usuario?.id ?? null, pedidoId);
+    }
     const insLinea = db.prepare(
       `INSERT INTO pedido_lineas (pedido_id, producto_id, nombre, sku, imagen, talla, precio, cantidad)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?)`
@@ -164,6 +195,13 @@ router.post('/pedidos', opcional, (req, res) => {
   });
 
   try {
+    /* Si viene cupón, se comprueba aquí (dentro del try) para que un código
+       caducado o ya usado devuelva un aviso claro y no un error 500. */
+    if (codigoCupon) {
+      const r = buscarCuponUsable(codigoCupon, email);
+      if (!r.cupon) throw Object.assign(new Error(r.motivo || 'Ese código no es válido.'), { code: 400 });
+      cupon = r.cupon;
+    }
     const pedido = crear();
     res.status(201).json({ pedido: cargarPedido(pedido) });
   } catch (err) {
