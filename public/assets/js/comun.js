@@ -223,6 +223,7 @@ const CAMPANAS = [
            <a class="aviso-superior__enlace" href="/tienda?rebaja=1">Ver las rebajas</a>`,
     hero: {
       imagen: '/img/promos/hero-halloween.svg',
+      badge: '¡Últimos días!',
       cejilla: 'Solo hasta el 31 de octubre',
       titulo: 'Rebajas de Halloween',
       texto: 'Prendas de temporada a precio de susto. Date prisa, que vuelan.',
@@ -238,6 +239,7 @@ const CAMPANAS = [
            <a class="aviso-superior__enlace" href="/tienda?rebaja=1">Ver las ofertas</a>`,
     hero: {
       imagen: '/img/promos/hero-black-friday.svg',
+      badge: '48 horas',
       cejilla: 'Del 21 de noviembre al 1 de diciembre',
       titulo: 'Black Friday en Globo',
       texto: 'Descuentos en una selección para toda la familia. Mientras dure el stock.',

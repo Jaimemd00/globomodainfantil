@@ -200,16 +200,52 @@ p { margin: 0 0 1rem; }
   min-height: clamp(260px, 32vw, 360px);
   display: flex; align-items: center;
 }
-.promo-hero__texto { max-width: 42ch; }
+.promo-hero__texto { max-width: 42ch; position: relative; }
 .promo-hero__cejilla {
-  text-transform: uppercase; letter-spacing: .14em; font-size: .78rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .14em; font-size: .8rem; font-weight: 700;
   margin: 0 0 .55rem;
 }
 .promo-hero__titulo {
-  font-family: var(--display); font-weight: 700; line-height: 1.05;
-  font-size: clamp(1.8rem, 3.2vw, 2.9rem); margin: 0 0 .6rem;
+  font-family: var(--display); font-weight: 700; line-height: 1.02;
+  font-size: clamp(2.1rem, 4.2vw, 3.6rem); margin: 0 0 .7rem;
+  text-wrap: balance;
 }
-.promo-hero__entrada { font-size: 1.02rem; margin: 0 0 1.3rem; max-width: 34ch; }
+.promo-hero__entrada { font-size: clamp(1rem, 1.4vw, 1.15rem); margin: 0 0 1.4rem; max-width: 36ch; }
+
+/* Botón grande del hero */
+.btn--grande { font-size: 1.08rem; padding: .95rem 1.8rem; border-radius: 999px; }
+.btn--grande span { display: inline-block; transition: transform .2s ease; }
+.btn--grande:hover span { transform: translateX(4px); }
+
+/* Sticker de urgencia (pegatina ladeada que late suavemente) */
+.promo-hero__sticker {
+  display: inline-block; margin-bottom: .9rem;
+  background: var(--rosa-fuerte); color: #fff;
+  font-family: var(--display); font-weight: 700; font-size: 1rem;
+  padding: .45rem 1.1rem; border-radius: 999px;
+  transform: rotate(-4deg); box-shadow: 0 8px 18px -8px rgba(69,59,67,.5);
+  animation: sticker-late 2.4s ease-in-out infinite;
+}
+.promo-hero--black-friday .promo-hero__sticker { background: var(--vainilla); color: var(--tinta); }
+.promo-hero--normal .promo-hero__sticker { background: var(--menta-fuerte); color: #fff; }
+
+/* Destellos que titilan sobre la ilustración */
+.promo-hero__chispa {
+  position: absolute; z-index: 1; width: 14px; height: 14px; border-radius: 50%;
+  background: radial-gradient(circle, #fff 0%, rgba(255,255,255,.2) 70%, transparent 71%);
+  opacity: .9; animation: chispa-titila 2.8s ease-in-out infinite;
+}
+.promo-hero__chispa--1 { top: 22%; right: 16%; animation-delay: 0s; }
+.promo-hero__chispa--2 { top: 54%; right: 30%; width: 9px; height: 9px; animation-delay: .9s; }
+.promo-hero__chispa--3 { top: 34%; right: 8%; width: 11px; height: 11px; animation-delay: 1.6s; }
+
+@keyframes sticker-late { 0%,100% { transform: rotate(-4deg) scale(1); } 50% { transform: rotate(-4deg) scale(1.07); } }
+@keyframes chispa-titila { 0%,100% { opacity: .25; transform: scale(.7); } 50% { opacity: 1; transform: scale(1.15); } }
+
+/* Respeto a quien prefiere menos movimiento */
+@media (prefers-reduced-motion: reduce) {
+  .promo-hero__sticker, .promo-hero__chispa { animation: none; }
+}
 
 /* Velo degradado por campaña: oscuro->transparente para que el titular se
    lea siempre, se vea la imagen que se vea detrás. */
@@ -232,6 +268,7 @@ p { margin: 0 0 1rem; }
   .promo-hero--halloween::before { background: linear-gradient(180deg, #ffe6cf 0%, rgba(255,230,207,.88) 30%, rgba(255,230,207,0) 72%); }
   .promo-hero--normal::before { background: linear-gradient(180deg, #fdf4f8 0%, rgba(253,244,248,.9) 30%, rgba(253,244,248,0) 72%); }
   .promo-hero--black-friday::before { background: linear-gradient(180deg, #403a44 0%, rgba(64,58,68,.88) 32%, rgba(64,58,68,0) 74%); }
+  .promo-hero__chispa { display: none; }
 }
 
 .cabecera {
@@ -616,6 +653,39 @@ textarea { min-height: 96px; resize: vertical; }
   background: var(--blanco); color: var(--tinta);
   border: 2px dashed var(--rosa-fuerte); border-radius: var(--radio);
   padding: .45rem .9rem; font-size: 1.05rem;
+}
+
+/* Banda del Club Globo en la portada (10 % para nuevos clientes) */
+.club-banda {
+  background: linear-gradient(120deg, var(--menta-suave) 0%, var(--rosa-suave) 55%, var(--lila-suave) 100%);
+  border-top: 1px solid var(--linea); border-bottom: 1px solid var(--linea);
+  padding: 2.4rem 0;
+}
+.club-banda__caja {
+  display: flex; align-items: center; gap: 2rem; flex-wrap: wrap; justify-content: center;
+  text-align: left;
+}
+.club-banda__sello {
+  flex: 0 0 auto; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  width: 150px; height: 150px; border-radius: 50%;
+  background: var(--blanco); border: 3px dashed var(--rosa-fuerte);
+  box-shadow: var(--sombra); transform: rotate(-5deg);
+}
+.club-banda__num { font-family: var(--display); font-weight: 700; font-size: 3.1rem; line-height: 1; color: var(--tinta); }
+.club-banda__num small { font-size: 1.4rem; }
+.club-banda__sello em {
+  font-style: normal; font-weight: 700; text-transform: uppercase; letter-spacing: .12em;
+  font-size: .72rem; color: var(--rosa-fuerte); margin-top: .25rem;
+}
+.club-banda__texto { flex: 1 1 360px; max-width: 560px; }
+.club-banda__texto h2 { font-family: var(--display); font-size: clamp(1.5rem, 2.6vw, 2.1rem); margin: .2rem 0 .5rem; line-height: 1.1; }
+.club-banda__texto p { margin: 0 0 1.2rem; font-size: 1.02rem; }
+.club-banda__texto .cejilla { margin: 0; }
+
+@media (max-width: 620px) {
+  .club-banda__caja { flex-direction: column; text-align: center; gap: 1.3rem; }
+  .club-banda__sello { width: 124px; height: 124px; }
+  .club-banda__num { font-size: 2.6rem; }
 }
 
 /* Reclamo del club en el formulario de registro */

@@ -185,12 +185,16 @@ function pintarPromoHero() {
   host.classList.add(`promo-hero--${h.id}`);
   host.style.backgroundImage = `url('${h.imagen}')`;
   host.innerHTML = `
+    <span class="promo-hero__chispa promo-hero__chispa--1" aria-hidden="true"></span>
+    <span class="promo-hero__chispa promo-hero__chispa--2" aria-hidden="true"></span>
+    <span class="promo-hero__chispa promo-hero__chispa--3" aria-hidden="true"></span>
     <div class="contenedor">
       <div class="promo-hero__texto">
+        ${h.badge ? `<span class="promo-hero__sticker">${esc(h.badge)}</span>` : ''}
         ${h.cejilla ? `<p class="promo-hero__cejilla">${esc(h.cejilla)}</p>` : ''}
         <h2 class="promo-hero__titulo">${esc(h.titulo)}</h2>
         <p class="promo-hero__entrada">${esc(h.texto)}</p>
-        <a class="btn btn--acento" href="${esc(h.href)}">${esc(h.cta)}</a>
+        <a class="btn btn--acento btn--grande" href="${esc(h.href)}">${esc(h.cta)} <span aria-hidden="true">→</span></a>
       </div>
     </div>`;
 }

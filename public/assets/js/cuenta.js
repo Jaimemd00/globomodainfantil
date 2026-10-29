@@ -213,6 +213,8 @@ function mostrarBienvenida() {
 
   if (!API.token) {
     document.getElementById('acceso').hidden = false;
+    /* Si llegan desde "Crear cuenta" (…/cuenta#registro), abrimos ya esa pestaña. */
+    if (location.hash === '#registro') document.getElementById('tab-registro')?.click();
     return;
   }
 
