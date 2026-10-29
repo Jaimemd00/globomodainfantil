@@ -217,14 +217,14 @@ const ENLACES = [
 const CAMPANAS = [
   {
     id: 'halloween',
-    desde: '10-24', hasta: '10-31',
+    desde: '10-24', hasta: '11-14',
     html: `<span class="aviso-superior__emoji" aria-hidden="true">🎃</span>
-           <strong>Rebajas de Halloween</strong> — prendas de temporada a precio de susto, solo hasta el 31 de octubre.
+           <strong>Rebajas de Halloween</strong> — prendas de temporada a precio de susto, solo hasta el 14 de noviembre.
            <a class="aviso-superior__enlace" href="/tienda?rebaja=1">Ver las rebajas</a>`,
     hero: {
       imagen: '/img/promos/hero-halloween.svg',
       badge: '¡Últimos días!',
-      cejilla: 'Solo hasta el 31 de octubre',
+      cejilla: 'Solo hasta el 14 de noviembre',
       titulo: 'Rebajas de Halloween',
       texto: 'Prendas de temporada a precio de susto. Date prisa, que vuelan.',
       cta: 'Ver las rebajas',
