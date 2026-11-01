@@ -5,6 +5,16 @@ const express = require('express');
 const { db, ESTADOS_TEXTO } = require('../db');
 const { opcional, requerido } = require('../middleware/auth');
 const { buscarCuponUsable, importeDescuento, estaRebajada } = require('./cupones');
+const { limitar } = require('../middleware/limites');
+
+/* Tope por IP de creación de pedidos: frena bots sin molestar a un cliente
+   real (que no hace decenas de pedidos por hora). Configurable por .env. */
+const limitePedido = limitar({
+  accion: 'pedido',
+  ventanaMs: 60 * 60 * 1000,
+  max: Number(process.env.PEDIDO_MAX || 40),
+  mensaje: 'Se han creado demasiados pedidos desde tu conexión. Espera un momento.'
+});
 
 const router = express.Router();
 
@@ -51,7 +61,7 @@ router.get('/envio', (_req, res) => {
 });
 
 // POST /api/pedidos — crear pedido (invitado o cliente registrado)
-router.post('/pedidos', opcional, (req, res) => {
+router.post('/pedidos', limitePedido, opcional, (req, res) => {
   const c = req.body || {};
   const items = Array.isArray(c.items) ? c.items : [];
 
@@ -172,8 +182,8 @@ router.post('/pedidos', opcional, (req, res) => {
        (el de bienvenida es de un solo uso por cliente). */
     if (cuponAplicado) {
       db.prepare(
-        'INSERT INTO cupones_usados (codigo, email, usuario_id, pedido_id) VALUES (?, ?, ?, ?)'
-      ).run(cuponAplicado, email, req.usuario?.id ?? null, pedidoId);
+        'INSERT INTO cupones_usados (codigo, email, usuario_id, pedido_id, ip) VALUES (?, ?, ?, ?, ?)'
+      ).run(cuponAplicado, email, req.usuario?.id ?? null, pedidoId, req.ip || null);
     }
     const insLinea = db.prepare(
       `INSERT INTO pedido_lineas (pedido_id, producto_id, nombre, sku, imagen, talla, precio, cantidad)
@@ -198,7 +208,7 @@ router.post('/pedidos', opcional, (req, res) => {
     /* Si viene cupón, se comprueba aquí (dentro del try) para que un código
        caducado o ya usado devuelva un aviso claro y no un error 500. */
     if (codigoCupon) {
-      const r = buscarCuponUsable(codigoCupon, email);
+      const r = buscarCuponUsable(codigoCupon, email, req.ip);
       if (!r.cupon) throw Object.assign(new Error(r.motivo || 'Ese código no es válido.'), { code: 400 });
       cupon = r.cupon;
     }

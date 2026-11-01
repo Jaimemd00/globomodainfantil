@@ -21,6 +21,14 @@ const PUBLICO = path.join(__dirname, '..', 'public');
 
 app.disable('x-powered-by');
 
+/* Detrás de Nginx: confiamos en 1 proxy para que req.ip sea la IP REAL del
+   cliente (la que Nginx añade en X-Forwarded-For) y no la del propio Nginx.
+   Sin esto, el rate-limit y el tope del cupón por IP verían a todos como la
+   misma IP. Si algún día se pone Cloudflare delante de Nginx, subir a 2.
+   Requiere que Nginx reenvíe la cabecera:
+     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; */
+app.set('trust proxy', Number(process.env.TRUST_PROXY || 1));
+
 /* El webhook de la pasarela necesita el cuerpo sin parsear: la firma se
    calcula sobre los bytes exactos, y si Express los convierte a objeto y se
    vuelven a serializar, deja de coincidir. Se aplica solo a esa ruta y antes

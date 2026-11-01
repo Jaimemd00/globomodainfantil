@@ -261,6 +261,9 @@ asegurarColumna('categorias', 'edad', 'TEXT');
 asegurarColumna('pedidos', 'metodo_envio', "TEXT NOT NULL DEFAULT 'domicilio'");
 asegurarColumna('pedidos', 'descuento', 'REAL NOT NULL DEFAULT 0');
 asegurarColumna('pedidos', 'cupon', 'TEXT');
+/* IP desde la que se usó el cupón, para limitar el farmeo del 10 % aunque se
+   cambie de correo en cada pedido (los correos son infinitos; las IP no). */
+asegurarColumna('cupones_usados', 'ip', 'TEXT');
 
 /* Cupón de bienvenida del club: 10 % en la primera compra, un uso por cliente
    y solo sobre prendas a precio normal. INSERT OR IGNORE = si ya existe (o si

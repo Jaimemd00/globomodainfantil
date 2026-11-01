@@ -4,8 +4,26 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const { db } = require('../db');
 const { firmarToken, requerido } = require('../middleware/auth');
+const { limitar } = require('../middleware/limites');
 
 const router = express.Router();
+
+const MIN = 60 * 1000;
+
+/* Topes por IP (configurables por .env). Pensados para no molestar a una
+   familia normal y sí frenar altas masivas y fuerza bruta de contraseñas. */
+const limiteRegistro = limitar({
+  accion: 'registro',
+  ventanaMs: Number(process.env.REG_VENTANA_MIN || 60) * MIN,
+  max: Number(process.env.REG_MAX || 8),
+  mensaje: 'Se han creado demasiadas cuentas desde tu conexión. Inténtalo más tarde.'
+});
+const limiteLogin = limitar({
+  accion: 'login',
+  ventanaMs: Number(process.env.LOGIN_VENTANA_MIN || 10) * MIN,
+  max: Number(process.env.LOGIN_MAX || 10),
+  mensaje: 'Demasiados intentos de acceso. Espera unos minutos e inténtalo de nuevo.'
+});
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[a-z]{2,}$/i;
 
@@ -24,7 +42,7 @@ function publico(u) {
 }
 
 // POST /api/auth/registro
-router.post('/registro', (req, res) => {
+router.post('/registro', limiteRegistro, (req, res) => {
   const nombre = String(req.body.nombre || '').trim();
   const email = String(req.body.email || '').trim().toLowerCase();
   const password = String(req.body.password || '');
@@ -58,7 +76,7 @@ router.post('/registro', (req, res) => {
 });
 
 // POST /api/auth/login
-router.post('/login', (req, res) => {
+router.post('/login', limiteLogin, (req, res) => {
   const email = String(req.body.email || '').trim().toLowerCase();
   const password = String(req.body.password || '');
 

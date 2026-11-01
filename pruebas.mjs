@@ -381,5 +381,32 @@ const reUso = await llamar('/api/pedidos', {
 });
 comprobar('cupón: de un solo uso por cliente (reintento rechazado con aviso)', reUso.estado === 400 && /usado/i.test(reUso.cuerpo.error || ''), JSON.stringify(reUso.cuerpo));
 
+/* --------------------- Antiabuso: tope del cupón por IP ------------------- */
+/* Aunque se cambie de correo en cada pedido, una misma IP solo puede usar el
+   10 % un número limitado de veces. Se piden pedidos con correos nuevos hasta
+   que la IP queda bloqueada; comprobamos que el bloqueo llega. */
+const artIp = await llamar('/api/admin/productos', {
+  method: 'POST', headers: admin,
+  body: JSON.stringify({ nombre: `Cupón IP ${azar}`, categoria_id: 'complementos', precio: 20, variantes: [{ talla: 'Única', stock: 20 }] })
+});
+const idIp = artIp.cuerpo.producto?.id;
+/* IP simulada vía X-Forwarded-For (lo que Nginx pone en producción). Única por
+   ejecución, para que la prueba sea determinista aunque se repita sobre la
+   misma base de datos. */
+const ipFalsa = `198.51.100.${(Number(azar) % 200) + 1}`;
+let huboExito = false;
+let bloqueoPorIp = false;
+for (let i = 0; i < 8 && !bloqueoPorIp; i++) {
+  const r = await llamar('/api/pedidos', {
+    method: 'POST',
+    headers: { 'X-Forwarded-For': ipFalsa },
+    body: JSON.stringify({ metodo_envio: 'recogida', nombre: 'IP', email: `ip${i}_${azar}@test.es`, telefono: '600000000', metodo_pago: 'transferencia', cupon: 'BIENVENIDA10', items: [{ producto_id: idIp, talla: 'Única', cantidad: 1 }] })
+  });
+  if (r.estado === 201 && r.cuerpo.pedido?.descuento > 0) huboExito = true;
+  if (r.estado === 400 && /conexi[oó]n/i.test(r.cuerpo.error || '')) bloqueoPorIp = true;
+}
+comprobar('cupón: el 10 % funciona con correos nuevos hasta el tope', huboExito);
+comprobar('cupón: se bloquea por IP aunque se cambie de correo (anti-farmeo)', bloqueoPorIp);
+
 console.log(`\n  ${ok} correctas · ${fallos} fallidas\n`);
 process.exit(fallos ? 1 : 0);
