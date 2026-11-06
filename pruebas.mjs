@@ -334,6 +334,30 @@ const loginTrasIntento = await llamar('/api/auth/login', {
 });
 comprobar('la cuenta de administración sigue intacta', loginTrasIntento.estado === 200);
 
+/* -------- Regla de rebajas: un rebajado solo aparece en Rebajas ---------- */
+const reb = await llamar('/api/admin/productos', {
+  method: 'POST', headers: admin,
+  body: JSON.stringify({ nombre: `Rebajado solo ${azar}`, categoria_id: 'ceremonia', precio: 10, precio_antes: 20, destacado: 1, novedad: 1, variantes: [{ talla: 'Única', stock: 5 }] })
+});
+const idReb = reb.cuerpo.producto?.id;
+const slugReb = reb.cuerpo.producto?.slug;
+const contiene = (r, id) => (r.cuerpo.productos || []).some((p) => p.id === id);
+
+const enReb = await llamar('/api/productos?rebaja=1&porPagina=48');
+comprobar('rebajas: el producto rebajado SÍ sale en Rebajas', contiene(enReb, idReb));
+
+const enCat = await llamar('/api/productos?categoria=ceremonia&porPagina=48');
+comprobar('rebajas: NO sale en su categoría', !contiene(enCat, idReb));
+
+const enNov = await llamar('/api/productos?novedad=1&porPagina=48');
+comprobar('rebajas: NO sale en novedades', !contiene(enNov, idReb));
+
+const enDest = await llamar('/api/productos?destacado=1&porPagina=48');
+comprobar('rebajas: NO sale en destacados', !contiene(enDest, idReb));
+
+const fichaReb = await llamar(`/api/productos/${slugReb}`);
+comprobar('rebajas: su ficha sigue abriéndose (para poder comprarlo)', fichaReb.estado === 200 && fichaReb.cuerpo.producto?.id === idReb);
+
 /* ---------------------------- Cupón del club ----------------------------- */
 /* Dos artículos: uno a precio normal (20 €) y uno ya rebajado (15, antes 30).
    El cupón de bienvenida (10 %) solo debe contar el de precio normal. */

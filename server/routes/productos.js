@@ -58,7 +58,14 @@ router.get('/productos', (req, res) => {
   }
   if (req.query.destacado === '1') where.push('p.destacado = 1');
   if (req.query.novedad === '1') where.push('p.novedad = 1');
+
+  /* Regla de rebajas: un producto rebajado (con precio_antes) vive SOLO en
+     Rebajas y en ningún otro listado.
+       - En Rebajas (?rebaja=1) se muestran únicamente los rebajados.
+       - En cualquier otro sitio (categoría, novedades, destacados, búsqueda,
+         portada…) se excluyen, para que no aparezcan a la vez en dos lados. */
   if (req.query.rebaja === '1') where.push('p.precio_antes IS NOT NULL');
+  else where.push('p.precio_antes IS NULL');
 
   const ordenes = {
     novedades: 'p.creado_en DESC, p.id DESC',
@@ -102,7 +109,7 @@ router.get('/productos/:slug', (req, res) => {
     .prepare(
       `SELECT p.*, c.slug AS categoria_slug, c.nombre AS categoria_nombre
        FROM productos p JOIN categorias c ON c.id = p.categoria_id
-       WHERE p.categoria_id = ? AND p.id != ? AND p.activo = 1
+       WHERE p.categoria_id = ? AND p.id != ? AND p.activo = 1 AND p.precio_antes IS NULL
        ORDER BY RANDOM() LIMIT 4`
     )
     .all(producto.categoria_id, producto.id)
