@@ -217,7 +217,7 @@ const ENLACES = [
 const CAMPANAS = [
   {
     id: 'halloween',
-    desde: '10-24', hasta: '11-14',
+    desde: '10-24', hasta: '10-31',
     html: `<span class="aviso-superior__emoji" aria-hidden="true">🎃</span>
            <strong>Rebajas de Halloween</strong> — prendas de temporada a precio de susto, solo hasta el 14 de noviembre.
            <a class="aviso-superior__enlace" href="/tienda?rebaja=1">Ver las rebajas</a>`,
@@ -233,14 +233,14 @@ const CAMPANAS = [
   },
   {
     id: 'black-friday',
-    desde: '11-21', hasta: '12-01',
+    desde: '11-07', hasta: '12-01',
     html: `<span class="aviso-superior__emoji" aria-hidden="true">🖤</span>
            <strong>BLACK FRIDAY</strong> en Globo — descuentos en una selección para toda la familia.
            <a class="aviso-superior__enlace" href="/tienda?rebaja=1">Ver las ofertas</a>`,
     hero: {
       imagen: '/img/promos/hero-black-friday.svg',
-      badge: '48 horas',
-      cejilla: 'Del 21 de noviembre al 1 de diciembre',
+      badge: 'Black Week',
+      cejilla: 'Ofertas Black Friday · hasta el 1 de diciembre',
       titulo: 'Black Friday en Globo',
       texto: 'Descuentos en una selección para toda la familia. Mientras dure el stock.',
       cta: 'Ver las ofertas',
