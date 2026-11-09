@@ -60,7 +60,7 @@ function pintarEncabezado() {
     titulo.textContent = 'Todos los artículos';
     miga.textContent = 'Catálogo';
   }
-  document.title = `${titulo.textContent} · Globo`;
+  document.title = `${titulo.textContent} · Globo Moda Infantil · Écija (Sevilla)`;
 }
 
 function pintarFiltros() {

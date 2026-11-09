@@ -334,6 +334,48 @@ const loginTrasIntento = await llamar('/api/auth/login', {
 });
 comprobar('la cuenta de administración sigue intacta', loginTrasIntento.estado === 200);
 
+/* ----------------------------- SEO del servidor --------------------------- */
+const texto = async (ruta) => {
+  const r = await fetch(B + ruta);
+  return { estado: r.status, cuerpo: await r.text(), tipo: r.headers.get('content-type') || '' };
+};
+
+const robots = await texto('/robots.txt');
+comprobar('seo: robots.txt apunta al sitemap del dominio real', /Sitemap: https?:\/\/[^\s]+\/sitemap\.xml/.test(robots.cuerpo) && !/modaglobo\.es/.test(robots.cuerpo), robots.cuerpo.slice(0, 200));
+
+const inicio = await texto('/');
+comprobar('seo: la portada lleva la ficha de tienda local (ClothingStore en Écija, 41400)',
+  inicio.cuerpo.includes('"@type":"ClothingStore"') && inicio.cuerpo.includes('41400') && inicio.cuerpo.includes('Écija'));
+comprobar('seo: la portada lleva canónica e imagen para compartir',
+  /<link rel="canonical"/.test(inicio.cuerpo) && /og:image" content="[^"]+og-globo\.jpg"/.test(inicio.cuerpo));
+comprobar('seo: la portada tiene un único <title> con la ubicación', (inicio.cuerpo.match(/<title>/g) || []).length === 1 && /<title>[^<]*Écija[^<]*Sevilla/.test(inicio.cuerpo));
+
+const catSeo = await texto('/tienda?categoria=ceremonia');
+comprobar('seo: la categoría tiene título propio con Écija (Sevilla)', /<title>[^<]*Ceremonia[^<]*Écija \(Sevilla\)/i.test(catSeo.cuerpo), (catSeo.cuerpo.match(/<title>[^<]*/) || [''])[0]);
+
+const busca = await texto('/tienda?q=vestido');
+comprobar('seo: las búsquedas internas no se indexan', /<meta name="robots" content="noindex, follow">/.test(busca.cuerpo));
+
+/* Producto con un nombre malicioso: no debe poder cerrar el <script> de los datos estructurados. */
+const malo = await llamar('/api/admin/productos', {
+  method: 'POST', headers: admin,
+  body: JSON.stringify({ nombre: `Pelele SEO ${azar} </script><script>alert(1)</script>`, categoria_id: 'ceremonia', precio: 24.5, variantes: [{ talla: '6M', stock: 3 }] })
+});
+const slugMalo = malo.cuerpo.producto?.slug;
+const fichaSeo = await texto(`/producto?slug=${encodeURIComponent(slugMalo)}`);
+comprobar('seo: la ficha lleva título, precio y datos de producto en el HTML',
+  fichaSeo.estado === 200 && /<title>Pelele SEO/.test(fichaSeo.cuerpo) && fichaSeo.cuerpo.includes('"@type":"Product"') && fichaSeo.cuerpo.includes('"price":"24.50"'));
+comprobar('seo: un nombre con </script> no inyecta código en la ficha',
+  !fichaSeo.cuerpo.includes('</script><script>alert(1)') && !/<title>[^<]*<script/i.test(fichaSeo.cuerpo));
+
+const noExiste = await texto('/producto?slug=no-existe-de-verdad-123');
+comprobar('seo: un producto inexistente da 404 y no se indexa', noExiste.estado === 404 && /noindex/.test(noExiste.cuerpo));
+
+const mapa = await texto('/sitemap.xml');
+comprobar('seo: el sitemap es XML e incluye fichas de producto con su foto',
+  /xml/.test(mapa.tipo) && mapa.cuerpo.includes(`/producto?slug=${encodeURIComponent(slugMalo)}`.replace(/&/g, '&amp;')) && mapa.cuerpo.includes('<image:loc>'));
+comprobar('seo: el sitemap incluye la página de Rebajas', mapa.cuerpo.includes('/tienda?rebaja=1'));
+
 /* -------- Regla de rebajas: un rebajado solo aparece en Rebajas ---------- */
 const reb = await llamar('/api/admin/productos', {
   method: 'POST', headers: admin,

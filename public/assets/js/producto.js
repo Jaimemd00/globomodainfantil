@@ -188,7 +188,7 @@ function anadir() {
       ? producto.imagenes
       : [{ ruta: producto.imagen, miniatura: producto.imagen, alt: producto.nombre }];
 
-    document.title = `${producto.nombre} · Globo`;
+    document.title = `${producto.nombre} · ${producto.categoria_nombre} · Globo Moda Infantil Écija`;
     pintar();
 
     if (datos.relacionados.length) {

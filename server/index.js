@@ -58,6 +58,10 @@ app.get('/api/salud', (_req, res) => {
   res.json({ ok: true, productos, hora: new Date().toISOString() });
 });
 
+/* SEO: robots.txt, sitemap.xml y metadatos de portada, catálogo y fichas,
+   servidos ya en el HTML. Va antes de los estáticos para que tenga prioridad. */
+app.use(require('./seo'));
+
 // Estáticos y páginas
 /*
  * Caché de los archivos estáticos.
