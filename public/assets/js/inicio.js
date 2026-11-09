@@ -35,6 +35,43 @@ function pintarGarantias() {
    banda tenga ritmo aunque todas las fotos vengan del mismo fondo claro. */
 const TINTES = ['#FCE0EA', '#CDF0E6', '#E6DCF0', '#FBEECD', '#FCE0EA', '#CDF0E6', '#E6DCF0'];
 
+/* =======================================================================
+   SIN REPETIDOS EN LA PORTADA
+   Un mismo artículo sale UNA sola vez en toda la portada. Las secciones se
+   reparten los artículos en el orden en que aparecen en la página:
+     escaparate → portadas de familia → Novedades → Favoritas → Ceremonia
+   Si un artículo ya salió más arriba, la sección siguiente lo salta y coge
+   el siguiente. Todas las consultas salen a la vez al cargar (la portada no
+   tarda más); solo el reparto se hace en orden.
+   ======================================================================= */
+const mostrados = new Set();
+
+/** Hasta `max` artículos de la lista que no hayan salido ya; los marca como vistos. */
+function tomarUnicos(lista, max) {
+  const elegidos = [];
+  for (const p of lista) {
+    if (elegidos.length >= max) break;
+    if (mostrados.has(p.id)) continue;
+    mostrados.add(p.id);
+    elegidos.push(p);
+  }
+  return elegidos;
+}
+
+/* Lanza una consulta ya y deja la promesa lista para usarla más tarde (el
+   catch vacío solo evita el aviso del navegador; el error se trata donde se usa). */
+function pedir(consulta) {
+  const promesa = API.get(consulta).then((r) => r.productos || []);
+  promesa.catch(() => {});
+  return promesa;
+}
+
+const PEDIDOS = {
+  novedades: pedir('/productos?novedad=1&porPagina=24&orden=novedades'),
+  destacados: pedir('/productos?destacado=1&porPagina=24'),
+  ceremonia: pedir('/productos?categoria=ceremonia&porPagina=24')
+};
+
 /**
  * Escaparate del hero.
  *
@@ -48,8 +85,11 @@ async function pintarEscaparate() {
   host.innerHTML = '<p class="escaparate__aviso">Cargando…</p>';
 
   try {
-    let { productos } = await API.get('/productos?novedad=1&porPagina=6&orden=novedades');
-    if (productos.length < 2) ({ productos } = await API.get('/productos?destacado=1&porPagina=6'));
+    let productos = tomarUnicos(await PEDIDOS.novedades, 6);
+    if (productos.length < 2) {
+      productos.forEach((p) => mostrados.delete(p.id)); // se devuelven: no salen aquí
+      productos = tomarUnicos(await PEDIDOS.destacados, 6);
+    }
     if (!productos.length) {
       /* Sin artículos no hay nada que enseñar, pero se dice en pantalla: si el
          hueco se oculta sin más, parece que la web está rota y no hay forma de
@@ -131,15 +171,22 @@ async function pintarFamilias() {
     const { categorias } = await API.get('/categorias');
     const visibles = categorias.filter((c) => c.total > 0);
 
-    /* Una portada por familia: el primer artículo destacado, o el primero que haya. */
-    const portadas = await Promise.all(
-      visibles.map(async (c) => {
-        const { productos } = await API.get(`/productos?categoria=${c.slug}&porPagina=1&destacado=1`);
-        if (productos.length) return productos[0].imagen;
-        const alt = await API.get(`/productos?categoria=${c.slug}&porPagina=1`);
-        return alt.productos[0]?.imagen || '/img/productos/generico.svg';
-      })
+    /* Una portada por familia: un artículo destacado de esa familia que no
+       haya salido ya en la portada; si no queda ninguno, cualquiera de la
+       familia sin repetir. Solo si la familia no tiene ninguno libre se
+       repite foto, para no dejar la tarjeta en blanco. */
+    const candidatos = await Promise.all(
+      visibles.map((c) =>
+        Promise.all([
+          pedir(`/productos?categoria=${c.slug}&porPagina=12&destacado=1`),
+          pedir(`/productos?categoria=${c.slug}&porPagina=12`)
+        ]).then(([dest, todos]) => [...dest, ...todos])
+      )
     );
+    const portadas = candidatos.map((lista) => {
+      const [libre] = tomarUnicos(lista, 1);
+      return (libre || lista[0])?.imagen || '/img/productos/generico.svg';
+    });
 
     host.innerHTML = visibles
       .map(
@@ -165,11 +212,19 @@ async function pintarFamilias() {
   }
 }
 
-async function cargarCarrusel(hostId, id, consulta, vacio) {
+/* Pinta un carrusel con los artículos que aún no han salido en la portada.
+   Si se queda sin ninguno (todos estaban ya más arriba), la sección entera
+   se oculta en vez de enseñar un carrusel vacío o repetido. */
+async function cargarCarrusel(hostId, id, pedido, vacio) {
   const host = document.getElementById(hostId);
-  host.innerHTML = armazonCarrusel(id);
+  if (!host) return;
   try {
-    const { productos } = await API.get(consulta);
+    const productos = tomarUnicos(await pedido, 10);
+    const seccion = host.closest('section');
+    if (!productos.length && seccion) {
+      seccion.style.display = 'none';
+      return;
+    }
     pintarCarrusel(id, productos, vacio);
   } catch (e) {
     pintarCarrusel(id, [], e.message);
@@ -201,8 +256,22 @@ function pintarPromoHero() {
 
 pintarPromoHero();
 pintarGarantias();
-pintarEscaparate();
-pintarFamilias();
-cargarCarrusel('carrusel-novedades', 'novedades', '/productos?novedad=1&porPagina=10&orden=novedades', 'Pronto habrá novedades.');
-cargarCarrusel('carrusel-destacados', 'destacados', '/productos?destacado=1&porPagina=10', 'Aún no hay favoritas.');
-cargarCarrusel('carrusel-ceremonia', 'ceremonia', '/productos?categoria=ceremonia&porPagina=10', 'Pregunta en la tienda por ceremonia.');
+
+const CARRUSELES = [
+  ['carrusel-novedades', 'novedades', PEDIDOS.novedades, 'Pronto habrá novedades.'],
+  ['carrusel-destacados', 'destacados', PEDIDOS.destacados, 'Aún no hay favoritas.'],
+  ['carrusel-ceremonia', 'ceremonia', PEDIDOS.ceremonia, 'Pregunta en la tienda por ceremonia.']
+];
+
+/* Los esqueletos de carga salen ya; el reparto de artículos va en el orden
+   de la página para que nada se repita (las consultas ya están en marcha). */
+CARRUSELES.forEach(([hostId, id]) => {
+  const host = document.getElementById(hostId);
+  if (host) host.innerHTML = armazonCarrusel(id);
+});
+
+(async () => {
+  await pintarEscaparate();
+  await pintarFamilias();
+  for (const args of CARRUSELES) await cargarCarrusel(...args);
+})();
