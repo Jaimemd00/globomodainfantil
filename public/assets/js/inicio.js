@@ -238,7 +238,8 @@ function pintarPromoHero() {
   if (!host || typeof heroActivo !== 'function') return;
   const h = heroActivo();
   host.classList.add(`promo-hero--${h.id}`);
-  host.style.backgroundImage = `url('${h.imagen}')`;
+  if (h.arte) host.classList.add('promo-hero--rejilla');
+  else if (h.imagen) host.style.backgroundImage = `url('${h.imagen}')`;
   host.innerHTML = `
     <span class="promo-hero__chispa promo-hero__chispa--1" aria-hidden="true"></span>
     <span class="promo-hero__chispa promo-hero__chispa--2" aria-hidden="true"></span>
@@ -249,9 +250,80 @@ function pintarPromoHero() {
         ${h.cejilla ? `<p class="promo-hero__cejilla">${esc(h.cejilla)}</p>` : ''}
         <h2 class="promo-hero__titulo">${esc(h.titulo)}</h2>
         <p class="promo-hero__entrada">${esc(h.texto)}</p>
-        <a class="btn btn--acento btn--grande" href="${esc(h.href)}">${esc(h.cta)} <span aria-hidden="true">→</span></a>
+        ${h.cuentaAtras && h.hasta ? '<div class="cuenta-atras" id="cuenta-atras" aria-live="off"></div>' : ''}
+        ${h.codigo ? `
+        <div class="ticket">
+          <div class="ticket__info">
+            <span class="ticket__etq">Tu código</span>
+            <span class="ticket__codigo">${esc(h.codigo)}</span>
+            ${h.codigoTexto ? `<span class="ticket__nota">${esc(h.codigoTexto)}</span>` : ''}
+          </div>
+          <button type="button" class="ticket__copiar" data-codigo="${esc(h.codigo)}">Copiar</button>
+        </div>` : ''}
+        <div class="promo-hero__botones">
+          <a class="btn btn--acento btn--grande" href="${esc(h.href)}">${esc(h.cta)} <span aria-hidden="true">→</span></a>
+          ${h.cta2 ? `<a class="btn btn--linea btn--grande promo-hero__cta2" href="${esc(h.href2)}">${esc(h.cta2)}</a>` : ''}
+        </div>
       </div>
+      ${h.arte ? `<div class="promo-hero__arte" aria-hidden="true"><img src="${esc(h.arte)}" alt="" width="740" height="465"></div>` : ''}
     </div>`;
+
+  if (h.cuentaAtras && h.hasta) iniciarCuentaAtras(h.hasta);
+  const boton = host.querySelector('.ticket__copiar');
+  if (boton) boton.addEventListener('click', () => copiarCodigo(boton));
+}
+
+/* Cuenta atrás hasta el final (23:59:59, hora de la tienda) del último día de
+   la campaña. Cuando llega a cero se quita sola. */
+function iniciarCuentaAtras(hasta) {
+  const caja = document.getElementById('cuenta-atras');
+  if (!caja) return;
+  const [mes, dia] = hasta.split('-').map(Number);
+  const ahora = new Date();
+  let fin = new Date(ahora.getFullYear(), mes - 1, dia, 23, 59, 59);
+  if (fin < ahora && mes === 1) fin = new Date(ahora.getFullYear() + 1, mes - 1, dia, 23, 59, 59);
+
+  const pintar = () => {
+    const resta = fin - new Date();
+    if (resta <= 0) { caja.remove(); return false; }
+    const d = Math.floor(resta / 86400000);
+    const h = Math.floor((resta % 86400000) / 3600000);
+    const m = Math.floor((resta % 3600000) / 60000);
+    const casilla = (n, t) => `<span class="cuenta-atras__casilla"><strong>${String(n).padStart(2, '0')}</strong><small>${t}</small></span>`;
+    caja.innerHTML = `<span class="cuenta-atras__etq">Termina en</span>${casilla(d, d === 1 ? 'día' : 'días')}${casilla(h, 'horas')}${casilla(m, 'min')}`;
+    caja.setAttribute('aria-label', `Termina en ${d} días, ${h} horas y ${m} minutos`);
+    return true;
+  };
+  if (pintar()) {
+    const reloj = setInterval(() => { if (!pintar()) clearInterval(reloj); }, 30000);
+  }
+}
+
+/* Copia el código y lo deja guardado para que el checkout lo aplique solo. */
+async function copiarCodigo(boton) {
+  const codigo = boton.dataset.codigo;
+  try { localStorage.setItem('globo_cupon', codigo); } catch (_) {}
+  let copiado = false;
+  try {
+    await navigator.clipboard.writeText(codigo);
+    copiado = true;
+  } catch (_) {
+    /* Navegadores sin portapapeles: se selecciona el texto para copiarlo a mano. */
+    const nodo = boton.closest('.ticket')?.querySelector('.ticket__codigo');
+    if (nodo) {
+      const rango = document.createRange();
+      rango.selectNodeContents(nodo);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(rango);
+    }
+  }
+  boton.textContent = copiado ? '¡Copiado!' : 'Guardado';
+  boton.classList.add('ticket__copiar--ok');
+  setTimeout(() => { boton.textContent = 'Copiar'; boton.classList.remove('ticket__copiar--ok'); }, 2500);
+  if (typeof avisar === 'function') {
+    avisar(`Código ${codigo} ${copiado ? 'copiado' : 'guardado'}: se aplicará solo al pagar en las prendas a precio normal.`, 'ok');
+  }
 }
 
 pintarPromoHero();

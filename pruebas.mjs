@@ -447,6 +447,31 @@ const reUso = await llamar('/api/pedidos', {
 });
 comprobar('cupón: de un solo uso por cliente (reintento rechazado con aviso)', reUso.estado === 400 && /usado/i.test(reUso.cuerpo.error || ''), JSON.stringify(reUso.cuerpo));
 
+/* ------------------------- Código de Black Friday ------------------------ */
+const bf = await llamar('/api/cupones/validar', {
+  method: 'POST', body: JSON.stringify({ codigo: 'blackfriday', email: `bf${azar}@test.es`, items: itemsCupon })
+});
+comprobar('BLACKFRIDAY: existe y da 10 % solo sobre precio normal (2 € de 20)', bf.cuerpo.valido === true && bf.cuerpo.descuento === 2, JSON.stringify(bf.cuerpo));
+
+/* ---------------- Un pago abandonado devuelve el código ------------------ */
+/* La clienta mete el código, va a pagar con tarjeta y cierra sin pagar: el
+   pedido caduca y el código tiene que volver a servirle. */
+const emailAband = `aband${azar}@test.es`;
+const aband = await llamar('/api/pedidos', {
+  method: 'POST',
+  body: JSON.stringify({ metodo_envio: 'recogida', nombre: 'Abandona', email: emailAband, telefono: '600000000', metodo_pago: 'tarjeta', cupon: 'BIENVENIDA10', items: itemsCupon })
+});
+comprobar('cupón: pedido con tarjeta creado con su descuento', aband.estado === 201 && aband.cuerpo.pedido?.descuento > 0, JSON.stringify(aband.cuerpo).slice(0, 200));
+const cancela = await llamar('/api/pagos/simulado', {
+  method: 'POST', body: JSON.stringify({ codigo: aband.cuerpo.pedido?.codigo, accion: 'cancelar' })
+});
+comprobar('cupón: el pago sin completar caduca el pedido', cancela.estado === 200, JSON.stringify(cancela.cuerpo));
+const otraVez = await llamar('/api/pedidos', {
+  method: 'POST',
+  body: JSON.stringify({ metodo_envio: 'recogida', nombre: 'Abandona', email: emailAband, telefono: '600000000', metodo_pago: 'transferencia', cupon: 'BIENVENIDA10', items: itemsCupon })
+});
+comprobar('cupón: tras un pago abandonado, la clienta puede volver a usar su código', otraVez.estado === 201 && otraVez.cuerpo.pedido?.descuento > 0, JSON.stringify(otraVez.cuerpo).slice(0, 200));
+
 /* --------------------- Antiabuso: tope del cupón por IP ------------------- */
 /* Aunque se cambie de correo en cada pedido, una misma IP solo puede usar el
    10 % un número limitado de veces. Se piden pedidos con correos nuevos hasta

@@ -99,7 +99,13 @@ async function crearSesionStripe({ pedido, lineas, base }) {
       body: cuerpoCupon
     });
     const datosCupon = await rc.json();
-    if (!rc.ok) throw new Error(datosCupon.error?.message || 'No se pudo aplicar el descuento en la pasarela.');
+    if (!rc.ok) {
+      /* El detalle de Stripe va al log (pm2 logs) y no a la clienta: puede
+         mencionar la clave. El caso típico es una clave restringida (rk_…) sin
+         permiso de escritura en "Coupons". */
+      console.error(`Stripe rechazó el descuento del pedido ${pedido.codigo}:`, datosCupon.error?.message || rc.status);
+      throw new Error('No hemos podido aplicar tu código de descuento en el pago. Inténtalo de nuevo o escríbenos y te ayudamos.');
+    }
     cuerpo.set('discounts[0][coupon]', datosCupon.id);
   }
 

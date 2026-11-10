@@ -23,13 +23,19 @@ const router = express.Router();
 
 const base = (req) => process.env.URL_PUBLICA || `${req.protocol}://${req.get('host')}`;
 
-/** Devuelve al catálogo las unidades que reservó un pedido. */
+/**
+ * Deshace lo que reservó un pedido que se cancela: devuelve las unidades al
+ * catálogo y libera el cupón que usó. Sin lo segundo, una clienta que mete
+ * BIENVENIDA10, llega a la página de pago y la cierra sin pagar se quedaba
+ * con el código gastado para siempre.
+ */
 function restaurarStock(pedidoId) {
   const lineas = db.prepare('SELECT producto_id, talla, cantidad FROM pedido_lineas WHERE pedido_id = ?').all(pedidoId);
   const reponer = db.prepare('UPDATE variantes SET stock = stock + ? WHERE producto_id = ? AND talla = ?');
   for (const l of lineas) {
     if (l.producto_id) reponer.run(l.cantidad, l.producto_id, l.talla);
   }
+  db.prepare('DELETE FROM cupones_usados WHERE pedido_id = ?').run(pedidoId);
   return lineas.length;
 }
 

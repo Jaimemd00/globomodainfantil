@@ -235,16 +235,28 @@ const CAMPANAS = [
     id: 'black-friday',
     desde: '11-07', hasta: '12-01',
     html: `<span class="aviso-superior__emoji" aria-hidden="true">🖤</span>
-           <strong>BLACK FRIDAY</strong> en Globo — descuentos en una selección para toda la familia.
+           <strong>BLACK FRIDAY</strong> en Globo — rebajas en una selección y un 10 % extra en el resto con el código <strong>BLACKFRIDAY</strong>.
            <a class="aviso-superior__enlace" href="/tienda?rebaja=1">Ver las ofertas</a>`,
     hero: {
-      imagen: '/img/promos/hero-black-friday.svg',
+      /* `arte`: ilustración en su propia columna, entera y sin recortes
+         (en vez de `imagen`, que va de fondo a todo el ancho). */
+      arte: '/img/promos/hero-black-friday.svg',
       badge: 'Black Week',
       cejilla: 'Ofertas Black Friday · hasta el 1 de diciembre',
       titulo: 'Black Friday en Globo',
-      texto: 'Descuentos en una selección para toda la familia. Mientras dure el stock.',
-      cta: 'Ver las ofertas',
-      href: '/tienda?rebaja=1'
+      texto: 'Rebajas en una selección para toda la familia y, en todo lo demás, un 10 % extra con tu código.',
+      cta: 'Ver las rebajas',
+      href: '/tienda?rebaja=1',
+      /* Segundo botón: el código vale en las prendas a precio normal, que
+         están en el catálogo general (lo rebajado ya tiene su descuento). */
+      cta2: 'Usar el código',
+      href2: '/tienda',
+      /* Ticket con el código: se copia de un toque y queda guardado para
+         que el checkout lo aplique solo. Debe existir en la tabla cupones. */
+      codigo: 'BLACKFRIDAY',
+      codigoTexto: '10 % extra en precio normal · 1\u00a0uso por cliente',
+      /* Cuenta atrás hasta el final del último día de la campaña. */
+      cuentaAtras: true
     }
   }
 ];
@@ -267,7 +279,7 @@ const HERO_DEFECTO = {
 /* Devuelve el hero de la campaña activa, o el de siempre. */
 function heroActivo() {
   const c = campanaActiva();
-  return c && c.hero ? { id: c.id, ...c.hero } : HERO_DEFECTO;
+  return c && c.hero ? { id: c.id, hasta: c.hasta, ...c.hero } : HERO_DEFECTO;
 }
 
 function campanaActiva(hoy = new Date()) {

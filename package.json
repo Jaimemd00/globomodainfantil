@@ -9,7 +9,7 @@
     "dev": "node --watch server/index.js",
     "seed": "node server/seed.js",
     "reset": "node server/seed.js --force",
-    "test": "node pruebas.mjs && node pruebas-imagenes.mjs && node pruebas-pagos.mjs",
+    "test": "node pruebas.mjs && node pruebas-imagenes.mjs && node pruebas-pagos.mjs && node pruebas-stripe.mjs",
     "admin": "node server/admin-cli.js",
     "catalogo": "node server/sincronizar-catalogo.js",
     "diagnostico": "node server/diagnostico.js",

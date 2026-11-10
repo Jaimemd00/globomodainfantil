@@ -176,6 +176,8 @@ document.getElementById('formulario-pedido').addEventListener('submit', async (e
   try {
     const { pedido } = await API.post('/pedidos', datos);
     Carrito.vaciar();
+    /* El código guardado desde el banner ya se ha usado en este pedido. */
+    if (pedido.cupon) { try { localStorage.removeItem('globo_cupon'); } catch (_) {} }
 
     /* Con tarjeta se pasa por la pasarela; el pedido no se da por pagado
        hasta que ella lo confirme. Con transferencia o pago al recibir,
@@ -223,9 +225,13 @@ document.getElementById('formulario-pedido').addEventListener('submit', async (e
     if (e.key === 'Enter') { e.preventDefault(); validarCupon(); }
   });
 
-  const cuponURL = new URLSearchParams(location.search).get('cupon');
-  if (cuponURL && entradaCupon) {
-    entradaCupon.value = cuponURL.toUpperCase();
+  /* Código que llega por la URL (tras registrarse) o que se copió en el
+     banner de la portada: se pone solo y se valida contra el servidor. */
+  let cuponGuardado = null;
+  try { cuponGuardado = localStorage.getItem('globo_cupon'); } catch (_) {}
+  const cuponInicial = new URLSearchParams(location.search).get('cupon') || cuponGuardado;
+  if (cuponInicial && entradaCupon) {
+    entradaCupon.value = cuponInicial.toUpperCase();
     validarCupon({ silencioso: true });
   }
 

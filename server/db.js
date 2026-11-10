@@ -273,6 +273,15 @@ db.prepare(
    VALUES ('BIENVENIDA10', 'Bienvenida al club: 10 % en tu primera compra', 'porcentaje', 10, 1, 1, 0, 1)`
 ).run();
 
+/* Código de la campaña de Black Friday: 10 % solo en prendas a precio normal
+   (no se suma a lo ya rebajado), uno por cliente y con el mismo tope por IP.
+   Deja de valer al acabar el 1 de diciembre (caduca_en es el último día
+   válido). Para otra campaña: otra fila con su código y su fecha. */
+db.prepare(
+  `INSERT OR IGNORE INTO cupones (codigo, descripcion, tipo, valor, solo_precio_normal, usos_por_cliente, minimo, activo, caduca_en)
+   VALUES ('BLACKFRIDAY', 'Black Friday: 10 % en prendas a precio normal', 'porcentaje', 10, 1, 1, 0, 1, '2026-12-01')`
+).run();
+
 /** Estados del ciclo de vida de un pedido, en orden. */
 const ESTADOS = ['pendiente', 'pagado', 'preparando', 'enviado', 'entregado', 'cancelado'];
 
