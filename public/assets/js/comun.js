@@ -238,8 +238,10 @@ const CAMPANAS = [
            <strong>BLACK FRIDAY</strong> en Globo — rebajas en una selección y un 10 % extra en el resto con el código <strong>BLACKFRIDAY</strong>.
            <a class="aviso-superior__enlace" href="/tienda?rebaja=1">Ver las ofertas</a>`,
     hero: {
-      /* `arte`: ilustración en su propia columna, entera y sin recortes
-         (en vez de `imagen`, que va de fondo a todo el ancho). */
+      /* formato 'cupon': la promo se pinta como un cupón recortable debajo
+         del hero (ilustración, texto y cuenta atrás en el cuerpo; el código
+         en la matriz). Sin formato, se pinta como tarjeta con ilustración. */
+      formato: 'cupon',
       arte: '/img/promos/hero-black-friday.svg',
       badge: 'Black Week',
       cejilla: 'Ofertas Black Friday · hasta el 1 de diciembre',

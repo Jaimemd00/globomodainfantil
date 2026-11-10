@@ -12,17 +12,13 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@500;600;700&family=Nunito+Sans:ital,opsz,wght@0,6..12,400;0,6..12,600;0,6..12,700;1,6..12,400&family=Parisienne&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/css/estilos.css?v=a27a39fc">
+<link rel="stylesheet" href="/assets/css/estilos.css?v=301d28dc">
 </head>
 <body>
 <a class="saltar" href="#principal">Saltar al contenido</a>
 <header id="cabecera"></header>
 
 <main id="principal">
-
-  <!-- Hero de campaña: cambia solo según la fecha (Halloween, Black Friday,
-       o el de siempre). Lo rellena inicio.js con lo que haya en comun.js. -->
-  <section class="promo-hero" id="promo-hero" aria-label="Promoción destacada"></section>
 
   <section class="hero">
     <div class="contenedor hero__rejilla">
@@ -48,6 +44,11 @@
     <div class="garantia" id="g3"></div>
     <div class="garantia" id="g4"></div>
   </div>
+
+  <!-- Promoción de temporada (Black Friday, Halloween…): va DEBAJO del hero,
+       no encima, para que la portada tenga una sola cabecera. Solo aparece
+       con una campaña activa. La rellena inicio.js con lo que hay en comun.js. -->
+  <section class="promo-hero" id="promo-hero" aria-label="Promoción de temporada" hidden></section>
 
   <!-- Elegir por edad es como busca de verdad quien compra ropa de niño -->
   <section class="seccion">
@@ -157,7 +158,7 @@
 </main>
 
 <footer id="pie"></footer>
-<script src="/assets/js/comun.js?v=e890dd9c"></script>
-<script src="/assets/js/inicio.js?v=365970dd"></script>
+<script src="/assets/js/comun.js?v=00e913d2"></script>
+<script src="/assets/js/inicio.js?v=2ef2eed8"></script>
 </body>
 </html>

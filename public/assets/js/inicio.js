@@ -236,8 +236,21 @@ async function cargarCarrusel(hostId, id, pedido, vacio) {
 function pintarPromoHero() {
   const host = document.getElementById('promo-hero');
   if (!host || typeof heroActivo !== 'function') return;
+
+  /* Sin campaña activa no se pinta nada: la portada ya tiene su hero y no
+     tiene sentido repetir otro debajo. */
+  if (typeof campanaActiva === 'function' && !campanaActiva()) {
+    host.hidden = true;
+    return;
+  }
+  host.hidden = false;
   const h = heroActivo();
   host.classList.add(`promo-hero--${h.id}`);
+
+  if (h.formato === 'cupon') {
+    pintarCupon(host, h);
+    return;
+  }
   if (h.arte) host.classList.add('promo-hero--rejilla');
   else if (h.imagen) host.style.backgroundImage = `url('${h.imagen}')`;
   host.innerHTML = `
@@ -266,6 +279,43 @@ function pintarPromoHero() {
         </div>
       </div>
       ${h.arte ? `<div class="promo-hero__arte" aria-hidden="true"><img src="${esc(h.arte)}" alt="" width="740" height="465"></div>` : ''}
+    </div>`;
+
+  if (h.cuentaAtras && h.hasta) iniciarCuentaAtras(h.hasta);
+  const boton = host.querySelector('.ticket__copiar');
+  if (boton) boton.addEventListener('click', () => copiarCodigo(boton));
+}
+
+/* Promo con forma de cupón recortable: cuerpo (dibujo, texto, cuenta atrás)
+   y matriz con el código, separados por la línea de puntos con unas tijeras. */
+function pintarCupon(host, h) {
+  host.classList.add('promo-hero--cupon');
+  host.innerHTML = `
+    <div class="cupon-bf">
+      ${h.badge ? `<span class="cupon-bf__pegatina">${esc(h.badge)}</span>` : ''}
+      <div class="cupon-bf__ticket">
+        <div class="cupon-bf__cuerpo">
+          ${h.arte ? `<img class="cupon-bf__arte" src="${esc(h.arte)}" alt="" aria-hidden="true" width="740" height="465">` : ''}
+          <div class="cupon-bf__texto">
+            ${h.cejilla ? `<p class="cupon-bf__cejilla">${esc(h.cejilla)}</p>` : ''}
+            <h2 class="cupon-bf__titulo">${esc(h.titulo)}</h2>
+            <p class="cupon-bf__entrada">${esc(h.texto)}</p>
+            <div class="cupon-bf__pie">
+              ${h.cuentaAtras && h.hasta ? '<div class="cuenta-atras" id="cuenta-atras" aria-live="off"></div>' : ''}
+              <a class="cupon-bf__enlace" href="${esc(h.href)}">${esc(h.cta)} <span aria-hidden="true">→</span></a>
+            </div>
+          </div>
+        </div>
+        ${h.codigo ? `
+        <div class="cupon-bf__matriz">
+          <span class="cupon-bf__tijeras" aria-hidden="true">✂</span>
+          <span class="cupon-bf__etq">Tu código</span>
+          <span class="cupon-bf__codigo">${esc(h.codigo)}</span>
+          ${h.codigoTexto ? `<span class="cupon-bf__nota">${h.codigoTexto.split(' · ').map((t) => `<span>${esc(t)}</span>`).join('')}</span>` : ''}
+          <button type="button" class="ticket__copiar cupon-bf__copiar" data-codigo="${esc(h.codigo)}">Copiar código</button>
+          ${h.cta2 ? `<a class="cupon-bf__usar" href="${esc(h.href2)}">${esc(h.cta2)} en la tienda</a>` : ''}
+        </div>` : ''}
+      </div>
     </div>`;
 
   if (h.cuentaAtras && h.hasta) iniciarCuentaAtras(h.hasta);
@@ -318,9 +368,10 @@ async function copiarCodigo(boton) {
       sel.addRange(rango);
     }
   }
+  if (!boton.dataset.texto) boton.dataset.texto = boton.textContent;
   boton.textContent = copiado ? '¡Copiado!' : 'Guardado';
   boton.classList.add('ticket__copiar--ok');
-  setTimeout(() => { boton.textContent = 'Copiar'; boton.classList.remove('ticket__copiar--ok'); }, 2500);
+  setTimeout(() => { boton.textContent = boton.dataset.texto; boton.classList.remove('ticket__copiar--ok'); }, 2500);
   if (typeof avisar === 'function') {
     avisar(`Código ${codigo} ${copiado ? 'copiado' : 'guardado'}: se aplicará solo al pagar en las prendas a precio normal.`, 'ok');
   }
