@@ -53,7 +53,7 @@ async function crearSesionStripe({ pedido, lineas, base }) {
   const cuerpo = new URLSearchParams();
   cuerpo.set('mode', 'payment');
   cuerpo.set('client_reference_id', pedido.codigo);
-  cuerpo.set('customer_email', pedido.email);
+  if (pedido.email) cuerpo.set('customer_email', pedido.email);
   cuerpo.set('success_url', `${base}/seguimiento?codigo=${pedido.codigo}&email=${encodeURIComponent(pedido.email)}&nuevo=1`);
   cuerpo.set('cancel_url', `${base}/carrito?pago=cancelado`);
   cuerpo.set('locale', 'es');

@@ -15,7 +15,8 @@
     "diagnostico": "node server/diagnostico.js",
     "version-assets": "node server/sellar-version.js",
     "prestart": "node server/sellar-version.js --silencioso",
-    "predev": "node server/sellar-version.js --silencioso"
+    "predev": "node server/sellar-version.js --silencioso",
+    "probar-cupon": "node server/probar-cupon.js"
   },
   "engines": {
     "node": ">=18"
